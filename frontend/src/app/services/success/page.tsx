@@ -4,10 +4,12 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { auth } from '@/lib/auth';
 import Link from 'next/link';
+import { downloadFile, endpoints } from '@/lib/api';
 
 export default function SuccessPage() {
   const router = useRouter();
   const [appData, setAppData] = useState<any>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   useEffect(() => {
     if (!auth.isAuthenticated()) {
@@ -21,6 +23,21 @@ export default function SuccessPage() {
       router.push('/dashboard');
     }
   }, [router]);
+
+  const handleDownload = async () => {
+    if (!appData?.application_id || isDownloading) return;
+    setIsDownloading(true);
+    try {
+      await downloadFile(
+        endpoints.downloadPdf(appData.application_id, false),
+        `submission_${appData.application_id}.pdf`
+      );
+    } catch (err) {
+      alert('Failed to download PDF');
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   if (!appData) return null;
 
@@ -61,13 +78,17 @@ export default function SuccessPage() {
                     <div>
                         <label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">Blockchain Record Hash</label>
                         <div className="rounded-lg bg-background px-3 py-2 border border-border">
-                            <code className="text-[10px] text-muted font-mono break-all">{appData.blockchain_hash || '0x742d35Cc6634C0532925a3b844Bc454e4438f44e'}</code>
+                            <code className="text-[10px] text-muted font-mono break-all">
+                              {appData.blockchain_integrity?.record_hash || '0x742d35Cc6634C0532925a3b844Bc454e4438f44e'}
+                            </code>
                         </div>
                     </div>
 
                     <div>
                         <label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1">Block Reference</label>
-                        <p className="text-sm italic font-medium text-navy">Block #{appData.block_num || '14,205,112'}</p>
+                        <p className="text-sm italic font-medium text-navy">
+                          {appData.blockchain_integrity?.block_ref || 'Block #14,205,112'}
+                        </p>
                     </div>
                 </div>
 
@@ -86,9 +107,13 @@ export default function SuccessPage() {
         </div>
 
         <div className="grid grid-cols-2 border-t border-border p-6 gap-4">
-            <button className="flex items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-sm font-bold text-white shadow-md transition-all hover:bg-primary-dark">
+            <button 
+                onClick={handleDownload}
+                disabled={isDownloading}
+                className="flex items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-sm font-bold text-white shadow-md transition-all hover:bg-primary-dark disabled:opacity-50"
+            >
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                Download Receipt
+                {isDownloading ? 'Generating...' : 'Download Receipt'}
             </button>
             <Link href="/dashboard" className="flex items-center justify-center gap-2 rounded-xl border border-border bg-white py-3.5 text-sm font-bold text-navy shadow-sm transition-all hover:bg-muted/5">
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 12h16m0 0l-4-4m4 4l-4 4" /></svg>

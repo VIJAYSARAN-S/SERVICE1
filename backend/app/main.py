@@ -12,7 +12,7 @@ from app.routes_manager import router as manager_router
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="CyberSheild Secure E-Governance API")
+app = FastAPI(title="CyberShield Secure E-Governance API") # Trigger reload
 
 app.add_middleware(
     CORSMiddleware,
@@ -22,8 +22,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Serve QR codes statically
+# Serve files statically
 app.mount("/qr_codes", StaticFiles(directory="qr_codes"), name="qr_codes")
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):

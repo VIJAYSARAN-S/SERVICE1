@@ -19,6 +19,10 @@
   --font-sans: "Inter", system-ui, -apple-system, sans-serif;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 :root {
   --background: #f8fafc;
   --foreground: #0f172a;
@@ -46,3 +50,13 @@ body {
 .shadow-soft {
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
 }
+
+@keyframes shrink-width {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+
+.animate-shrink-width {
+  animation: shrink-width linear forwards;
+}
+

@@ -1,0 +1,11 @@
+node_modules/
+.next/
+__pycache__/
+*.pyc
+*.pyo
+venv/
+env/
+.env
+egov.db
+*.db
+.DS_Store

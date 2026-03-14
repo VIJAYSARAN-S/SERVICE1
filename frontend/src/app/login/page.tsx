@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiFetch, endpoints } from '@/lib/api';
 import { auth } from '@/lib/auth';
+import Link from 'next/link';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -15,6 +16,22 @@ export default function LoginPage() {
   const [riskData, setRiskData] = useState<{ risk_score: number; risk_status: string } | null>(null);
   const [showOtpToast, setShowOtpToast] = useState(false);
   const [demoOtp, setDemoOtp] = useState('');
+  const [sessionExpired, setSessionExpired] = useState(false);
+  
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('msg') === 'session_expired') {
+      setSessionExpired(true);
+    }
+
+    if (auth.isAuthenticated()) {
+      const role = auth.getRole();
+      if (role === 'citizen') router.push('/dashboard');
+      else if (role === 'clerk') router.push('/clerk');
+      else if (role === 'manager') router.push('/manager');
+      else router.push('/admin');
+    }
+  }, [router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,6 +117,12 @@ export default function LoginPage() {
         )}
 
         <div className="p-8 pt-6">
+          {sessionExpired && (
+            <div className="mb-6 rounded-lg bg-warning/10 p-4 text-sm font-bold text-warning border border-warning/20">
+              ⚠️ Your session has expired for security reasons. Please login again to continue.
+            </div>
+          )}
+
           {error && (
             <div className="mb-6 rounded-lg bg-danger/10 p-4 text-sm font-medium text-danger">
               {error}
@@ -145,7 +168,7 @@ export default function LoginPage() {
                 <input type="checkbox" className="h-4 w-4 rounded border-border text-primary focus:ring-primary" />
                 <span className="text-xs text-muted">Remember this device</span>
               </div>
-              <a href="#" className="text-xs font-bold text-primary hover:underline">Forgot Password?</a>
+              <Link href="/forgot-password" title="Reset your password" className="text-xs font-bold text-primary hover:underline">Forgot Password?</Link>
             </div>
 
             <button
@@ -167,13 +190,17 @@ export default function LoginPage() {
           </form>
 
           <div className="mt-8 text-center text-xs text-muted">
-            <p className="flex items-center justify-center gap-2">
+            <p>
+              Don't have an account? <Link href="/register" className="font-bold text-primary hover:underline">Register here</Link>
+            </p>
+            <p className="mt-4 flex items-center justify-center gap-2">
               <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M2.166 4.9L10 1.55l7.834 3.35a1 1 0 01.666.945V14a5 5 0 01-5 5H6.5a5 5 0 01-5-5V5.845a1 1 0 01.666-.945zM10 8a1 1 0 00-1 1v5a1 1 0 102 0V9a1 1 0 00-1-1z" clipRule="evenodd" />
+                <path fillRule="evenodd" d="M2.166 4.9L10 1.55l7.834 3.35a1 1 0 01.666.945V14a5 5 0 01-5 5H6.5a5 5 0 01-5-5V5.845a1 1 0 01.666-.945zM10 8a1 1 0 00-1-1v5a1 1 0 102 0V9a1 1 0 00-1-1z" clipRule="evenodd" />
               </svg>
               Standard 256-bit AES Encryption
             </p>
           </div>
+
         </div>
       </div>
     </div>

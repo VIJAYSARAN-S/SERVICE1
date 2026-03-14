@@ -13,6 +13,7 @@ class User(Base):
     device_id = Column(String, nullable=True)
     failed_attempts = Column(Integer, default=0)
     lock_until = Column(DateTime(timezone=True), nullable=True)
+    profile_photo = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 class OTPCode(Base):
@@ -65,6 +66,7 @@ class Application(Base):
     final_report = Column(Text, nullable=True)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    extra_data = Column(Text, nullable=True)  # JSON string for complex forms
     updated_at = Column(DateTime(timezone=True), onupdate=func.now(), nullable=True)
 
 class IntegrityLedger(Base):

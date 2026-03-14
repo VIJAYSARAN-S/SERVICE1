@@ -61,16 +61,16 @@ export default function VerifyOtpPage() {
 
       auth.setToken(data.access_token);
       auth.setRole(data.role);
-      auth.setUser({ email, role: data.role });
+      auth.setUser({ email, role: data.role, full_name: data.full_name });
 
       if (data.role === 'citizen') {
-        router.push('/dashboard');
+        window.location.href = '/dashboard';
       } else if (data.role === 'clerk') {
-        router.push('/clerk');
+        window.location.href = '/clerk';
       } else if (data.role === 'manager') {
-        router.push('/manager');
+        window.location.href = '/manager';
       } else {
-        router.push('/admin');
+        window.location.href = '/admin';
       }
     } catch (err: any) {
       setError(err.message || 'Verification failed. Please check the code.');

@@ -5,9 +5,13 @@ import Link from 'next/link';
 import { auth } from '@/lib/auth';
 
 export default function Navbar() {
-  const isAuthenticated = auth.isAuthenticated();
-  const user = auth.getUser();
-  const role = auth.getRole();
+  const [isAuthenticated, setIsAuthenticated] = React.useState(false);
+  const [role, setRole] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    setIsAuthenticated(auth.isAuthenticated());
+    setRole(auth.getRole());
+  }, []);
 
   const handleLogout = () => {
     auth.logout();
@@ -52,8 +56,8 @@ export default function Navbar() {
               {role === 'citizen' && (
                  <div className="hidden md:flex items-center gap-6 mr-4">
                   <Link href="/dashboard" className="text-sm font-medium text-muted hover:text-navy transition-colors">Home</Link>
-                  <Link href="/services/birth-certificate" className="text-sm font-medium text-muted hover:text-navy transition-colors">Services</Link>
-                  <Link href="/dashboard" className="text-sm font-medium text-muted hover:text-navy transition-colors">Status</Link>
+                  <Link href="/dashboard#citizen-services" className="text-sm font-medium text-muted hover:text-navy transition-colors">Services</Link>
+                  <Link href="/dashboard#application-status" className="text-sm font-medium text-muted hover:text-navy transition-colors">Status</Link>
                 </div>
               )}
               
@@ -66,7 +70,7 @@ export default function Navbar() {
                 onClick={handleLogout}
                 className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-dark transition-all"
               >
-                Logout
+                Sign Out
               </button>
             </>
           ) : (

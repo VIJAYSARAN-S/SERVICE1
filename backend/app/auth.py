@@ -6,7 +6,7 @@ import random
 
 SECRET_KEY = "super-secret-demo-key-change-this"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
+ACCESS_TOKEN_EXPIRE_MINUTES = 720 # Extended for demo session
 
 import bcrypt
 

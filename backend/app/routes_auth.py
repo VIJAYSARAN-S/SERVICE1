@@ -4,10 +4,13 @@ from datetime import datetime, timedelta, timezone
 
 from app.database import get_db
 from app import models, schemas
-from app.auth import hash_password, verify_password, generate_otp, create_access_token
-from app.risk_engine import calculate_risk
 from app.audit import create_audit_log
+from app.risk_engine import calculate_risk
 import re
+import shutil
+import os
+from fastapi import File, UploadFile
+from app.auth import hash_password, verify_password, generate_otp, create_access_token, get_current_user
 
 router = APIRouter(tags=["Authentication"])
 
@@ -177,5 +180,103 @@ def verify_otp(payload: schemas.OTPVerifyRequest, db: Session = Depends(get_db))
     return {
         "access_token": token,
         "token_type": "bearer",
-        "role": user.role
+        "role": user.role,
+        "full_name": user.full_name
     }
+
+@router.post("/forgot-password")
+def forgot_password(payload: schemas.PasswordResetRequest, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.email == payload.email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Email address not found in our records.")
+
+    otp_code = generate_otp()
+    otp = models.OTPCode(
+        email=payload.email,
+        otp_code=otp_code,
+        expires_at=datetime.now(timezone.utc) + timedelta(minutes=10)
+    )
+    db.add(otp)
+    db.commit()
+
+    create_audit_log(db, "PASSWORD_RESET_REQUESTED", f"OTP generated for password reset: {payload.email}")
+
+    # In a real app, this would be emailed. For demo, we return it.
+    return {
+        "message": "OTP generated for password reset.",
+        "demo_otp": otp_code
+    }
+
+@router.post("/reset-password")
+def reset_password(payload: schemas.PasswordUpdateRequest, db: Session = Depends(get_db)):
+    otp = (
+        db.query(models.OTPCode)
+        .filter(models.OTPCode.email == payload.email, models.OTPCode.otp_code == payload.otp_code)
+        .order_by(models.OTPCode.id.desc())
+        .first()
+    )
+
+    if not otp:
+        raise HTTPException(status_code=400, detail="Invalid OTP")
+
+    expires_at = otp.expires_at
+    if expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=timezone.utc)
+
+    if expires_at < datetime.now(timezone.utc):
+        raise HTTPException(status_code=400, detail="OTP expired")
+
+    user = db.query(models.User).filter(models.User.email == payload.email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user.password_hash = hash_password(payload.new_password)
+    user.failed_attempts = 0 # Also reset locks just in case
+    user.lock_until = None
+    
+    # Delete the used OTP
+    db.delete(otp)
+    db.commit()
+
+    create_audit_log(db, "PASSWORD_RESET_SUCCESS", f"Password updated successfully for {payload.email}")
+
+    return {"message": "Password updated successfully. You can now login with your new password."}
+
+@router.get("/profile")
+def get_profile(db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
+    user = db.query(models.User).filter(models.User.email == current_user["sub"]).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return {
+        "full_name": user.full_name,
+        "email": user.email,
+        "profile_photo": f"http://localhost:8000/{user.profile_photo}" if user.profile_photo else None,
+        "role": user.role,
+        "created_at": user.created_at
+    }
+
+@router.post("/upload-profile-photo")
+async def upload_profile_photo(
+    file: UploadFile = File(...), 
+    db: Session = Depends(get_db), 
+    current_user: dict = Depends(get_current_user)
+):
+    user = db.query(models.User).filter(models.User.email == current_user["sub"]).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    file_extension = file.filename.split(".")[-1]
+    file_name = f"user_{user.id}_{int(datetime.now().timestamp())}.{file_extension}"
+    file_path = f"uploads/profile_photos/{file_name}"
+
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    user.profile_photo = file_path
+    db.commit()
+
+    return {"message": "Profile photo uploaded successfully", "photo_url": f"http://localhost:8000/{file_path}"}
+

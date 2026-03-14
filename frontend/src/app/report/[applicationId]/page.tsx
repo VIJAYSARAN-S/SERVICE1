@@ -33,7 +33,7 @@ function Badge({ text, variant }: { text: string; variant: 'success' | 'danger' 
     gray:    'bg-muted/10   text-muted   border-border',
   };
   return (
-    <span className={`inline-flex items-center rounded-full border px-3 py-0.5 text-[10px] font-bold uppercase tracking-widest ${map[variant]}`}>
+    <span className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-widest ${map[variant]}`}>
       {text}
     </span>
   );
@@ -60,15 +60,14 @@ function confidenceVariant(level: string | undefined): 'success' | 'warning' | '
   return 'gray';
 }
 
-// ─── Section wrapper ──────────────────────────────────────────────────────────
 function Section({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-border overflow-hidden">
-      <div className="flex items-center gap-3 border-b border-border bg-[#F8FAFC] px-5 py-3">
-        <span className="text-primary">{icon}</span>
-        <h3 className="text-xs font-bold uppercase tracking-widest text-navy">{title}</h3>
+    <div className="rounded-2xl border-2 border-border overflow-hidden shadow-sm">
+      <div className="flex items-center gap-4 border-b-2 border-border bg-[#F8FAFC] px-6 py-4">
+        <span className="text-primary scale-125">{icon}</span>
+        <h3 className="text-base font-black uppercase tracking-widest text-navy">{title}</h3>
       </div>
-      <div className="grid grid-cols-1 divide-y divide-border sm:grid-cols-2 sm:divide-y-0 sm:divide-x">
+      <div className="grid grid-cols-1 divide-y-2 divide-border sm:grid-cols-2 sm:divide-y-0 sm:divide-x-2">
         {children}
       </div>
     </div>
@@ -77,9 +76,9 @@ function Section({ title, icon, children }: { title: string; icon: React.ReactNo
 
 function Field({ label, value, wide = false }: { label: string; value: React.ReactNode; wide?: boolean }) {
   return (
-    <div className={`px-5 py-4 ${wide ? 'sm:col-span-2' : ''}`}>
-      <p className="text-[9px] font-bold uppercase tracking-widest text-muted/60 mb-1">{label}</p>
-      <div className="text-sm font-semibold text-navy">{value}</div>
+    <div className={`px-6 py-6 ${wide ? 'sm:col-span-2' : ''}`}>
+      <p className="text-[13px] font-black uppercase tracking-widest text-muted/60 mb-2">{label}</p>
+      <div className="text-lg font-bold text-navy leading-tight">{value}</div>
     </div>
   );
 }
@@ -115,37 +114,54 @@ export default function ReportPage() {
     setIsGenerating(true);
     try {
       const htmlToImage = (window as any).htmlToImage;
-      const { jsPDF } = (window as any).jspdf;
+      const jspdfLib = (window as any).jspdf;
 
-      if (!htmlToImage || !jsPDF) {
+      if (!htmlToImage || !jspdfLib) {
         throw new Error('PDF libraries are still loading. Please try again in a moment.');
       }
 
-      // html-to-image is much better at handling modern CSS (Tailwind v4 lab/oklch colors)
-      // because it uses SVG foreignObject rendering instead of a custom CSS parser.
-      const dataUrl = await htmlToImage.toPng(reportRef.current, {
-        quality: 1.0,
-        pixelRatio: 2,
-        backgroundColor: '#f8fafc',
+      const { jsPDF } = jspdfLib;
+
+      // Ensure we capture the full height and width
+      const width = reportRef.current.scrollWidth;
+      const height = reportRef.current.scrollHeight;
+
+      // Use JPEG with reasonable quality and pixel ratio to keep file size small (sub 2MB)
+      const dataUrl = await htmlToImage.toJpeg(reportRef.current, {
+        quality: 0.9,
+        pixelRatio: 2, 
+        backgroundColor: '#FAFBFC',
+        width,
+        height,
       });
 
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
       
-      // Calculate dimensions to fit on page while maintaining aspect ratio
       const img = new Image();
       img.src = dataUrl;
       await new Promise((resolve) => (img.onload = resolve));
       
-      const imgWidth = pdfWidth - 20; // 10mm margins
-      const imgHeight = (img.height * imgWidth) / img.width;
+      const margin = 10;
+      const maxWidth = pdfWidth - (margin * 2);
+      const maxHeight = pdfHeight - (margin * 2);
+
+      let finalWidth = maxWidth;
+      let finalHeight = (img.height * finalWidth) / img.width;
+
+      if (finalHeight > maxHeight) {
+        finalHeight = maxHeight;
+        finalWidth = (img.width * finalHeight) / img.height;
+      }
       
-      pdf.addImage(dataUrl, 'PNG', 10, 10, imgWidth, imgHeight);
+      const xOffset = (pdfWidth - finalWidth) / 2;
+      
+      pdf.addImage(dataUrl, 'JPEG', xOffset, margin, finalWidth, finalHeight);
       pdf.save(`CyberShield_Report_${applicationId}.pdf`);
     } catch (err: any) {
       console.error('PDF Generation Error:', err);
-      alert('PDF generation failed. Using print fallback as alternative.');
+      alert('PDF generation failed. Using browser print as fallback.');
       window.print();
     } finally {
       setIsGenerating(false);
@@ -191,9 +207,9 @@ export default function ReportPage() {
                 d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
             </svg>
           </div>
-          <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-muted/60">Government of India — Digital Governance Division</p>
-          <h1 className="text-2xl font-extrabold tracking-tight text-navy">CyberShield e-Governance</h1>
-          <p className="text-base font-semibold text-muted">Official Service Application Report</p>
+          <p className="text-[13px] font-black uppercase tracking-[0.4em] text-muted/60">Government of India — Digital Governance Division</p>
+          <h1 className="text-4xl font-black tracking-tight text-navy">CyberShield e-Governance</h1>
+          <p className="text-xl font-bold text-muted">Official Service Application Report</p>
           <div className="mt-3 flex items-center gap-3">
             <Badge
               text={report.status.replace(/_/g, ' ')}
@@ -205,10 +221,10 @@ export default function ReportPage() {
         {/* Application ID + generated bar */}
         <div className="flex items-center justify-between border-t border-border bg-[#F8FAFC] px-6 py-3">
           <div className="flex items-center gap-2">
-            <span className="text-[9px] font-bold uppercase tracking-widest text-muted/60">Application ID</span>
-            <span className="font-extrabold text-primary tracking-wide">{report.application_id}</span>
+            <span className="text-[13px] font-black uppercase tracking-widest text-muted/60">Application ID</span>
+            <span className="text-xl font-black text-primary tracking-widest">{report.application_id}</span>
           </div>
-          <div className="text-[9px] font-bold uppercase tracking-widest text-muted/60">
+          <div className="text-[13px] font-black uppercase tracking-widest text-muted/60">
             {isApproved
               ? `Finalised: ${fmtDate(report.updated_at)}`
               : `Submitted: ${fmtDate(report.created_at)}`}
@@ -235,6 +251,50 @@ export default function ReportPage() {
         <Field label="Parent / Guardian" value={fmt(report.parent_name)} />
         <Field label="Phone" value={fmt(report.phone)} />
         <Field label="Address" value={fmt(report.address)} wide />
+
+        {/* ── Service Specific Data (extra_data) ───────────────────── */}
+        {report.extra_data && (
+          <div className="sm:col-span-2 divide-y-2 divide-border border-t-2 border-border">
+            <div className="bg-muted/5 px-6 py-4">
+              <h4 className="text-[11px] font-black uppercase tracking-widest text-muted/60">Additional Form Information</h4>
+            </div>
+            <div className="grid grid-cols-1 divide-y-2 divide-border sm:grid-cols-2 sm:divide-y-0 sm:divide-x-2">
+              {Object.entries(JSON.parse(report.extra_data)).map(([key, value]) => {
+                if (key.includes('base64')) return null; // skip images here
+                const label = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                return <Field key={key} label={label} value={String(value)} />;
+              })}
+            </div>
+            
+            {/* Display images if present */}
+            {(() => {
+              const extra = JSON.parse(report.extra_data);
+              if (extra.photo_base64 || extra.signature_base64) {
+                return (
+                  <div className="grid grid-cols-1 divide-y-2 divide-border sm:grid-cols-2 sm:divide-y-0 sm:divide-x-2 bg-white">
+                    {extra.photo_base64 && (
+                      <div className="px-6 py-6">
+                        <p className="text-[13px] font-black uppercase tracking-widest text-muted/60 mb-4">Passport size photo</p>
+                        <div className="w-32 h-40 border-2 border-border rounded-xl overflow-hidden bg-muted/5 shadow-inner">
+                          <img src={extra.photo_base64} alt="Passport Photo" className="w-full h-full object-cover" />
+                        </div>
+                      </div>
+                    )}
+                    {extra.signature_base64 && (
+                      <div className="px-6 py-6">
+                        <p className="text-[13px] font-black uppercase tracking-widest text-muted/60 mb-4">Applicant Signature</p>
+                        <div className="w-48 h-24 border-2 border-border rounded-xl flex items-center justify-center p-2 bg-white shadow-inner">
+                          <img src={extra.signature_base64} alt="Signature" className="max-w-full max-h-full object-contain" />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+              return null;
+            })()}
+          </div>
+        )}
       </Section>
 
       {/* ── Risk & Confidence ───────────────────────────────────────────────── */}
@@ -321,14 +381,14 @@ export default function ReportPage() {
             </div>
           )}
           <div>
-            <p className="text-[9px] font-bold uppercase tracking-widest text-muted/60">Final Decision</p>
-            <p className={`text-base font-extrabold ${isApproved ? 'text-success' : 'text-navy'}`}>
+            <p className="text-[13px] font-black uppercase tracking-widest text-muted/60">Final Decision</p>
+            <p className={`text-2xl font-black ${isApproved ? 'text-success' : 'text-navy'}`}>
               {isApproved ? 'Application Approved' : report.status.replace(/_/g, ' ')}
             </p>
           </div>
         </div>
         {isApproved && report.updated_at && (
-          <p className="text-xs text-muted/70">
+          <p className="text-sm text-muted/70 italic">
             Officially approved on <strong>{fmtDate(report.updated_at)}</strong> by Senior Manager, CyberShield e-Governance.
           </p>
         )}

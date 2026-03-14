@@ -1,7 +1,9 @@
-const BASE_URL = 'http://127.0.0.1:8000';
+const BASE_URL = 'http://localhost:8000';
 
 export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   const token = localStorage.getItem('token');
+  const url = `${BASE_URL}${endpoint}`;
+  console.log(`[API] Fetching: ${url}`);
   
   const headers = {
     'Content-Type': 'application/json',
@@ -9,12 +11,17 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
     ...options.headers,
   };
 
-  const response = await fetch(`${BASE_URL}${endpoint}`, {
+  const response = await fetch(url, {
     ...options,
     headers,
   });
 
   if (!response.ok) {
+    if (response.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('role');
+      window.location.href = '/login?msg=session_expired';
+    }
     const errorData = await response.json().catch(() => ({}));
     throw new Error(errorData.detail || 'API request failed');
   }
@@ -22,11 +29,40 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   return response.json();
 }
 
+export async function downloadFile(endpoint: string, filename: string) {
+  const token = localStorage.getItem('token');
+  const url = `${BASE_URL}${endpoint}`;
+  
+  const headers = {
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+  };
+
+  const response = await fetch(url, { headers });
+  if (!response.ok) throw new Error('Download failed');
+
+  const blob = await response.blob();
+  const downloadUrl = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = downloadUrl;
+  link.setAttribute('download', filename);
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+}
+
 export const endpoints = {
   login: '/login',
   verifyOtp: '/verify-otp',
   register: '/register',
   birthCertificate: '/services/birth-certificate',
+
+  marriageCertificate: '/services/marriage-certificate',
+  incomeCertificate: '/services/income-certificate',
+  communityCertificate: '/services/community-certificate',
+  passportApplication: '/services/passport-application',
+  drivingLicense: '/services/driving-license',
+  voterId: '/services/voter-id',
+  buildingPermit: '/services/building-permit',
   myRequests: '/citizen/my-requests',
   adminApplications: '/admin/applications',
   adminLoginLogs: '/admin/login-logs',
@@ -39,4 +75,9 @@ export const endpoints = {
   managerReject: (id: string) => `/manager/applications/${id}/reject`,
   report: (id: string) => `/report/${id}`,
   qrAccess: '/citizen/qr',
+  downloadPdf: (id: string, final: boolean = false) => `/services/application/${id}/pdf?final=${final}`,
+  forgotPassword: '/forgot-password',
+  resetPassword: '/reset-password',
+  profile: '/profile',
+  uploadProfilePhoto: '/upload-profile-photo',
 };

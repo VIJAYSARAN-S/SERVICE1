@@ -74,6 +74,15 @@ export default function ClerkDashboard() {
       render: (val: string) => <span className="font-bold text-primary text-xs">{val}</span>,
     },
     {
+      header: 'Service',
+      accessor: 'service_type',
+      render: (val: string) => (
+        <span className="rounded-md bg-muted/10 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground border border-border/50">
+          {val.replace(/_/g, ' ')}
+        </span>
+      ),
+    },
+    {
       header: 'Applicant',
       accessor: 'applicant_name',
       render: (val: string) => (
@@ -132,7 +141,7 @@ export default function ClerkDashboard() {
             <input
               type="text"
               placeholder="Remark (optional)"
-              value={state.remark}
+              value={state.remark || ''}
               onChange={(e) => setRemark(appId, e.target.value)}
               className="rounded-lg border border-border bg-background px-2 py-1 text-xs focus:border-primary focus:outline-none"
             />
@@ -152,6 +161,12 @@ export default function ClerkDashboard() {
                 ✕ Reject
               </button>
             </div>
+            <button
+              onClick={() => router.push(`/report/${appId}`)}
+              className="mt-1 w-full rounded-lg border border-primary/20 bg-primary/5 px-2 py-1.5 text-[10px] font-bold text-primary hover:bg-primary/10 transition-all"
+            >
+              👁 View Report Details
+            </button>
           </div>
         );
       },

@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { downloadFile, endpoints } from '@/lib/api';
 
 // ─── Step definitions ─────────────────────────────────────────────────────────
 const STEPS = [
@@ -208,45 +209,59 @@ export default function ApplicationTracker({ application }: ApplicationTrackerPr
       </div>
 
       {/* Footer — report or rejection info */}
-      {(application.final_report || application.status.includes('REJECTED')) && (
-        <div className={`flex items-center justify-between border-t px-6 py-3 ${
-          application.final_report
-            ? 'border-success/20 bg-success/5'
-            : 'border-danger/20 bg-danger/5'
-        }`}>
-          {application.final_report ? (
-            <>
-              <div className="flex items-center gap-2 text-xs font-medium text-success">
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                Official report is ready
-              </div>
-              <button
-                onClick={() => router.push(`/report/${application.application_id}`)}
-                className="flex items-center gap-1.5 rounded-lg bg-success/10 px-4 py-1.5 text-[11px] font-bold text-success hover:bg-success/20 transition-all"
-              >
-                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-                View Report
-              </button>
-            </>
-          ) : (
-            <div className="flex items-center gap-2 text-xs font-medium text-danger">
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                  d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      <div className={`flex flex-wrap items-center justify-between border-t px-6 py-3 gap-3 ${
+        application.status.includes('REJECTED') ? 'border-danger/20 bg-danger/5' : 'bg-muted/5'
+      }`}>
+        <div className="flex flex-wrap gap-2">
+          {/* Always allow download of submission */}
+          <button
+            onClick={() => downloadFile(endpoints.downloadPdf(application.application_id, false), `submission_${application.application_id}.pdf`)}
+            className="flex items-center gap-1.5 rounded-lg border border-border bg-white px-3 py-1.5 text-[10px] font-bold text-navy hover:bg-muted/10 transition-all"
+          >
+            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            Submission PDF
+          </button>
+
+          {application.status === 'APPROVED' && (
+            <button
+              onClick={() => downloadFile(endpoints.downloadPdf(application.application_id, true), `${application.service_type}_certificate.pdf`)}
+              className="flex items-center gap-1.5 rounded-lg bg-success/10 px-3 py-1.5 text-[10px] font-bold text-success hover:bg-success/20 transition-all shadow-sm"
+            >
+              <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              Application was not approved. You may re-apply if eligible.
-            </div>
+              Final Certificate PDF
+            </button>
           )}
         </div>
-      )}
+
+        {application.status === 'APPROVED' ? (
+          <button
+            onClick={() => router.push(`/report/${application.application_id}`)}
+            className="flex items-center gap-1.5 rounded-lg bg-primary/10 px-4 py-1.5 text-[10px] font-extrabold text-primary hover:bg-primary/20 transition-all"
+          >
+            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+            View Real-time Report
+          </button>
+        ) : application.status.includes('REJECTED') ? (
+            <div className="flex items-center gap-2 text-[10px] font-bold text-danger uppercase tracking-wider">
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Clarification Needed / Rejected
+            </div>
+        ) : (
+          <div className="flex items-center gap-2 text-[10px] font-bold text-muted uppercase tracking-wider">
+            <div className="h-1 w-1 bg-muted rounded-full animate-ping"></div>
+            Verification in Progress
+          </div>
+        )}
+      </div>
     </div>
   );
 }

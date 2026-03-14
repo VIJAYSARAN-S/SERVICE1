@@ -23,7 +23,7 @@ def build_final_report(app: models.Application, ledger: models.IntegrityLedger |
         "   CYBERSHIELD e-GOVERNANCE FINAL REPORT   ",
         "============================================",
         f"Application ID     : {app.application_id}",
-        f"Service Type       : Birth Certificate",
+        f"Service Type       : {app.service_type.replace('_', ' ').title()}",
         f"Citizen Name       : {app.applicant_name}",
         f"Date of Birth      : {app.dob}",
         f"Parent / Guardian  : {app.parent_name}",

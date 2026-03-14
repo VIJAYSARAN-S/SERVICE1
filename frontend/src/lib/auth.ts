@@ -16,7 +16,7 @@ export const auth = {
     localStorage.removeItem('role');
     localStorage.removeItem('email');
     localStorage.removeItem('user');
-    window.location.href = '/login';
+    window.location.href = '/';
   },
   isAuthenticated: () => {
     return !!(typeof window !== 'undefined' && localStorage.getItem('token'));

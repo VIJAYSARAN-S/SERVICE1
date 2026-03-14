@@ -11,11 +11,14 @@ import ApplicationTracker from '@/components/ApplicationTracker';
 export default function DashboardPage() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
   const [requests, setRequests] = useState<any[]>([]);
   const [isLoadingRequests, setIsLoadingRequests] = useState(true);
   const [qrData, setQrData] = useState<any>(null);
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
   const [isFetchingQr, setIsFetchingQr] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!auth.isAuthenticated()) {
@@ -24,11 +27,58 @@ export default function DashboardPage() {
     }
     setUser(auth.getUser());
 
+    // Fetch full profile including photo
+    apiFetch(endpoints.profile)
+      .then(setProfile)
+      .catch(err => {
+        console.error('Profile fetch failed:', err);
+        // If the token is invalid or expired, log the user out and redirect to login
+        if (err.message.includes('token')) {
+          auth.logout();
+        }
+      });
+
     apiFetch(endpoints.myRequests)
       .then((data) => setRequests(data.requests || []))
-      .catch(() => setRequests([]))
+      .catch((err) => {
+        console.error('Requests fetch failed:', err);
+        setRequests([]);
+        if (err.message.includes('token')) {
+          auth.logout();
+        }
+      })
       .finally(() => setIsLoadingRequests(false));
   }, [router]);
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      // Manual fetch for FormData as apiFetch currently expects JSON
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:8000/upload-profile-photo', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      if (!response.ok) throw new Error('Upload failed');
+
+      const data = await response.json();
+      setProfile({ ...profile, profile_photo: data.photo_url });
+    } catch (err: any) {
+      alert(err.message || 'Error uploading photo');
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const handleQrClick = async () => {
     setIsQrModalOpen(true);
@@ -50,15 +100,53 @@ export default function DashboardPage() {
     <div className="space-y-12 pb-20">
       {/* Welcome Section */}
       <section className="flex items-center gap-6 rounded-2xl bg-white p-6 shadow-soft border border-border">
-        <div className="h-20 w-20 overflow-hidden rounded-full border-2 border-primary/20 p-1">
-          <div className="h-full w-full rounded-full bg-muted/10 flex items-center justify-center text-muted">
-            <svg className="h-10 w-10 text-muted/40" fill="currentColor" viewBox="0 0 20 20">
-               <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+        <div
+          className="relative h-24 w-24 cursor-pointer group"
+          onClick={() => fileInputRef.current?.click()}
+        >
+          <div className="h-full w-full overflow-hidden rounded-full border-4 border-primary/20 p-1 transition-all group-hover:border-primary/40 bg-white">
+            {profile?.profile_photo ? (
+              <img
+                src={profile.profile_photo}
+                alt="Profile"
+                className="h-full w-full rounded-full object-cover"
+              />
+            ) : (
+              <div className="h-full w-full rounded-full bg-muted/10 flex items-center justify-center text-muted">
+                <svg className="h-12 w-12 text-muted/40" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                </svg>
+              </div>
+            )}
+          </div>
+
+          {/* Overlay on hover */}
+          <div className="absolute inset-0 flex items-center justify-center rounded-full bg-navy/40 opacity-0 transition-opacity group-hover:opacity-100">
+            <svg className="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
           </div>
+
+          {/* Loading Indicator */}
+          {isUploading && (
+            <div className="absolute inset-0 flex items-center justify-center rounded-full bg-white/60">
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+            </div>
+          )}
+
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handlePhotoUpload}
+            className="hidden"
+            accept="image/*"
+          />
         </div>
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-navy">Welcome back, {user.email.split('@')[0]}</h1>
+          <h1 className="text-3xl font-extrabold tracking-tight text-navy">
+            Welcome back, {profile?.full_name || user.full_name || user.email.split('@')[0]}
+          </h1>
           <p className="mt-1 text-base text-muted/80">Your digital identity is secure and blockchain-verified.</p>
         </div>
       </section>
@@ -68,8 +156,8 @@ export default function DashboardPage() {
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-xl font-bold text-navy">Security Status</h2>
           <div className="flex items-center gap-2 rounded-lg bg-primary/5 px-3 py-1.5 text-xs font-bold text-primary border border-primary/10">
-             <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary font-bold"></div>
-             LIVE MONITORING
+            <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary font-bold"></div>
+            LIVE MONITORING
           </div>
         </div>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -102,7 +190,7 @@ export default function DashboardPage() {
       </section>
 
       {/* My Requests — Application Tracker */}
-      <section>
+      <section id="application-status">
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h2 className="text-xl font-bold text-navy">My Requests</h2>
@@ -145,37 +233,67 @@ export default function DashboardPage() {
       </section>
 
       {/* Citizen Services Section */}
-      <section>
+      <section id="citizen-services">
         <h2 className="mb-6 text-xl font-bold text-navy">Citizen Services</h2>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           <ServiceCard
             title="Birth Certificate"
-            description="Submit application and track status in real-time."
+            description="Official birth record application."
             href="/services/birth-certificate"
             isActive={true}
-            statusText="APPLICATION ACTIVE"
+
+            icon={<svg className="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>}
+          />
+
+          <ServiceCard
+            title="Marriage Certificate"
+            description="Legal marriage registration service."
+            href="/services/marriage-certificate"
+            isActive={true}
+            icon={<svg className="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>}
+          />
+          <ServiceCard
+            title="Income Certificate"
+            description="Verify annual household income."
+            href="/services/income-certificate"
+            isActive={true}
+            icon={<svg className="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
+          />
+          <ServiceCard
+            title="Community Certificate"
+            description="Official caste or community verification."
+            href="/services/community-certificate"
+            isActive={true}
+            icon={<svg className="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>}
+          />
+
+          <ServiceCard
+            title="Passport Application"
+            description="Apply for new passport or renewal."
+            href="/services/passport-application"
+            isActive={true}
+            icon={<svg className="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
+          />
+          <ServiceCard
+            title="Driving License"
+            description="New learner or permanent license registration."
+            href="/services/driving-license"
+            isActive={true}
+            icon={<svg className="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>}
+          />
+          <ServiceCard
+            title="Voter ID"
+            description="Register for your National Voter Identity Card."
+            href="/services/voter-id"
+            isActive={true}
             icon={<svg className="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>}
           />
           <ServiceCard
-            title="Identity Services"
-            description="Digital passport and national ID renewal."
-            href="#"
-            isComingSoon={true}
-            icon={<svg className="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>}
-          />
-          <ServiceCard
-            title="Tax & Revenue"
-            description="Income tax filing and property assessments."
-            href="#"
-            isComingSoon={true}
+            title="Building Permit"
+            description="New construction and renovation approval."
+            href="/services/building-permit"
+            isActive={true}
             icon={<svg className="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>}
-          />
-          <ServiceCard
-            title="Social Welfare"
-            description="Benefit programs and community support grants."
-            href="#"
-            isComingSoon={true}
-            icon={<svg className="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>}
           />
         </div>
       </section>

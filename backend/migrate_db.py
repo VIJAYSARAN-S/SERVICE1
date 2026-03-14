@@ -1,54 +1,32 @@
-"""
-Migration script: Add new workflow columns to the applications table.
-Run this once: python migrate_db.py
-"""
-
 import sqlite3
-
-DB_PATH = "egov.db"
-
-NEW_COLUMNS = [
-    ("risk_score", "INTEGER DEFAULT 0"),
-    ("confidence_level", "TEXT DEFAULT 'HIGH'"),
-    ("clerk_decision", "TEXT"),
-    ("clerk_remark", "TEXT"),
-    ("manager_decision", "TEXT"),
-    ("manager_remark", "TEXT"),
-    ("final_report", "TEXT"),
-    ("updated_at", "DATETIME"),
-]
+import os
 
 def migrate():
-    conn = sqlite3.connect(DB_PATH)
+    db_path = "egov.db"
+    if not os.path.exists(db_path):
+        print("Database not found. Skipping manual migration (create_all will handle it).")
+        return
+
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
-    # Get existing columns
-    cursor.execute("PRAGMA table_info(applications)")
-    existing_columns = {row[1] for row in cursor.fetchall()}
+    # Add profile_photo to users if missing
+    try:
+        cursor.execute("ALTER TABLE users ADD COLUMN profile_photo TEXT")
+        print("Added profile_photo to users table.")
+    except sqlite3.OperationalError:
+        print("profile_photo already exists in users table.")
 
-    added = []
-    skipped = []
-
-    for col_name, col_def in NEW_COLUMNS:
-        if col_name not in existing_columns:
-            cursor.execute(f"ALTER TABLE applications ADD COLUMN {col_name} {col_def}")
-            added.append(col_name)
-        else:
-            skipped.append(col_name)
-
-    # Also update any old 'Pending' status rows to 'UNDER_CLERK_REVIEW'
-    cursor.execute(
-        "UPDATE applications SET status = 'UNDER_CLERK_REVIEW' WHERE status = 'Pending'"
-    )
-    updated_rows = cursor.rowcount
+    # Add extra_data to applications if missing
+    try:
+        cursor.execute("ALTER TABLE applications ADD COLUMN extra_data TEXT")
+        print("Added extra_data to applications table.")
+    except sqlite3.OperationalError:
+        print("extra_data already exists in applications table.")
 
     conn.commit()
     conn.close()
-
-    print(f"Migration complete.")
-    print(f"  Columns added   : {added if added else 'None (all already exist)'}")
-    print(f"  Columns skipped : {skipped}")
-    print(f"  Rows updated (Pending → UNDER_CLERK_REVIEW): {updated_rows}")
+    print("Migration completed.")
 
 if __name__ == "__main__":
     migrate()
