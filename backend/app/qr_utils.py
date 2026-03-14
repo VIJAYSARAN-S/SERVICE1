@@ -17,3 +17,12 @@ def generate_qr_file(application_id: str, service_type: str, record_hash: str, t
     img = qrcode.make(json.dumps(payload))
     img.save(file_path)
     return file_path
+
+def generate_simple_qr(data: str, filename: str):
+    qr_folder = "qr_codes"
+    os.makedirs(qr_folder, exist_ok=True)
+    
+    file_path = os.path.join(qr_folder, f"{filename}.png")
+    img = qrcode.make(data)
+    img.save(file_path)
+    return file_path

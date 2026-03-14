@@ -75,9 +75,19 @@ export const endpoints = {
   managerReject: (id: string) => `/manager/applications/${id}/reject`,
   report: (id: string) => `/report/${id}`,
   qrAccess: '/citizen/qr',
+  identityQr: '/citizen/identity-qr',
   downloadPdf: (id: string, final: boolean = false) => `/services/application/${id}/pdf?final=${final}`,
   forgotPassword: '/forgot-password',
   resetPassword: '/reset-password',
   profile: '/profile',
   uploadProfilePhoto: '/upload-profile-photo',
+  // PDS Admin Endpoints
+  pdsLogin: '/login', // Using same login for now, role will distinguish
+  pdsCitizen: (code: string) => `/pds/citizen/${code}`,
+  pdsDistribute: '/pds/distribute',
+  pdsStock: '/pds/stock',
+  pdsBulkSync: '/pds/bulksync',
+  pdsTransactions: '/pds/transactions',
+  pdsTransactionsMe: '/pds/transactions/me',
+  pdsBillDownload: (id: string) => `/citizen/pds-bill/${id}`,
 };

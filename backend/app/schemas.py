@@ -1,5 +1,6 @@
 from pydantic import BaseModel, EmailStr
-from typing import Optional
+from typing import Optional, List
+from datetime import datetime
 
 class RegisterRequest(BaseModel):
     full_name: str
@@ -214,3 +215,49 @@ class PasswordUpdateRequest(BaseModel):
     email: EmailStr
     otp_code: str
     new_password: str
+
+# PDS Schemas
+class PDSItemBase(BaseModel):
+    item_name: str
+    quantity: float
+    unit: str
+
+class PDSTransactionRequest(BaseModel):
+    transaction_id: str
+    citizen_code: str
+    beneficiary_name: str
+    ration_card_number: str
+    card_type: str
+    shop_id: str
+    issued_month: str
+    issued_date: str
+    verification_mode: str
+    items: list[PDSItemBase]
+    sync_status: Optional[str] = "SYNCED"
+
+class BulksyncRequest(BaseModel):
+    transactions: list[PDSTransactionRequest]
+
+class PDSItemResponse(PDSItemBase):
+    id: int
+    transaction_id: str
+
+    class Config:
+        from_attributes = True
+
+class PDSTransactionResponse(BaseModel):
+    transaction_id: str
+    citizen_code: str
+    beneficiary_name: str
+    ration_card_number: str
+    card_type: str
+    shop_id: str
+    issued_month: str
+    issued_date: str
+    verification_mode: str
+    sync_status: str
+    created_at: datetime
+    items: List[PDSItemResponse]
+
+    class Config:
+        from_attributes = True

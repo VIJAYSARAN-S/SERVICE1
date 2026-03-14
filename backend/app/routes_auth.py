@@ -119,6 +119,31 @@ def login_user(payload: schemas.LoginRequest, db: Session = Depends(get_db)):
     )
     db.add(login_log)
 
+    if not user.device_id:
+        user.device_id = payload.device_id
+
+    # Feature: Bypass OTP for PDS Admin
+    print(f"--- CHECKING ROLE: {user.role} ---")
+    if user.role == "pds_admin":
+        print("--- PDS ADMIN BYPASS TRIGGERED ---")
+        token = create_access_token({
+            "sub": user.email,
+            "role": user.role,
+            "user_id": user.id
+        })
+        db.commit()
+        create_audit_log(db, "LOGIN_SUCCESS", f"PDS Admin logged in directly: {payload.email}")
+        return {
+            "message": "PDS Admin Login Successful",
+            "access_token": token,
+            "token_type": "bearer",
+            "role": user.role,
+            "full_name": user.full_name,
+            "risk_score": risk_score,
+            "risk_status": risk_status,
+            "action_taken": action_taken
+        }
+
     otp_code = generate_otp()
     otp = models.OTPCode(
         email=payload.email,
@@ -126,9 +151,6 @@ def login_user(payload: schemas.LoginRequest, db: Session = Depends(get_db)):
         expires_at=datetime.now(timezone.utc) + timedelta(minutes=5)
     )
     db.add(otp)
-
-    if not user.device_id:
-        user.device_id = payload.device_id
 
     db.commit()
 

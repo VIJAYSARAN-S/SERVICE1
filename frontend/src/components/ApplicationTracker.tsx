@@ -72,13 +72,13 @@ function nodeClasses(state: StepState): { circle: string; label: string } {
       };
     case 'active':
       return {
-        circle: 'bg-primary text-white border-primary shadow-md shadow-primary/30 ring-4 ring-primary/10',
-        label:  'text-primary font-bold',
+        circle: 'bg-amber text-white border-amber shadow-[0_10px_20px_-5px_rgba(217,119,6,0.3)] ring-4 ring-amber/10',
+        label:  'text-amber font-black',
       };
     case 'rejected':
       return {
-        circle: 'bg-danger text-white border-danger shadow-sm shadow-danger/30',
-        label:  'text-danger font-semibold',
+        circle: 'bg-danger text-white border-danger shadow-sm shadow-danger/20',
+        label:  'text-danger font-black',
       };
     default: // pending
       return {
@@ -98,17 +98,17 @@ function lineClass(leftState: StepState, rightState: StepState): string {
 // ─── Status badge ─────────────────────────────────────────────────────────────
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { cls: string; label: string }> = {
-    PENDING:               { cls: 'bg-muted/10 text-muted',           label: 'Pending' },
-    UNDER_CLERK_REVIEW:    { cls: 'bg-warning/10 text-warning',        label: 'Under Clerk Review' },
-    UNDER_MANAGER_REVIEW:  { cls: 'bg-blue-100 text-blue-700',         label: 'Under Manager Review' },
-    APPROVED:              { cls: 'bg-success/10 text-success',        label: 'Approved' },
-    REJECTED_BY_CLERK:     { cls: 'bg-danger/10 text-danger',          label: 'Rejected by Clerk' },
-    REJECTED_BY_MANAGER:   { cls: 'bg-danger/10 text-danger',          label: 'Rejected by Manager' },
+    PENDING:               { cls: 'bg-slate-100 text-slate-500',      label: 'Pending' },
+    UNDER_CLERK_REVIEW:    { cls: 'bg-amber-50 text-amber-700',      label: 'Under Clerk Review' },
+    UNDER_MANAGER_REVIEW:  { cls: 'bg-navy/5 text-navy',             label: 'Under Manager Review' },
+    APPROVED:              { cls: 'bg-emerald-50 text-emerald-700',  label: 'Approved' },
+    REJECTED_BY_CLERK:     { cls: 'bg-rose-50 text-rose-700',        label: 'Rejected by Clerk' },
+    REJECTED_BY_MANAGER:   { cls: 'bg-rose-50 text-rose-700',        label: 'Rejected by Manager' },
   };
-  const { cls, label } = map[status] || { cls: 'bg-muted/10 text-muted', label: status };
+  const { cls, label } = map[status] || { cls: 'bg-slate-100 text-slate-500', label: status };
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-widest ${cls}`}>
-      <span className={`h-1.5 w-1.5 rounded-full ${status === 'APPROVED' ? 'bg-success' : status.includes('REJECTED') ? 'bg-danger' : status === 'PENDING' ? 'bg-muted' : 'bg-current animate-pulse'}`} />
+    <span className={`inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-[10px] font-black uppercase tracking-widest border border-current/10 ${cls}`}>
+      <span className={`h-2 w-2 rounded-full ${status === 'APPROVED' ? 'bg-emerald-500' : status.includes('REJECTED') ? 'bg-rose-500' : status === 'PENDING' ? 'bg-slate-400' : 'bg-current animate-pulse'}`} />
       {label}
     </span>
   );
@@ -146,15 +146,15 @@ export default function ApplicationTracker({ application }: ApplicationTrackerPr
       {/* Header row */}
       <div className="flex flex-wrap items-start justify-between gap-4 border-b border-border bg-[#F8FAFC] px-6 py-4">
         <div className="flex items-center gap-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-navy text-white shadow-lg">
+            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5}
                 d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
           </div>
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-muted/60">Application ID</p>
-            <p className="text-sm font-extrabold text-primary tracking-wide">{application.application_id}</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Application ID</p>
+            <p className="text-sm font-black text-navy tracking-tight">{application.application_id}</p>
           </div>
           <div className="hidden sm:block h-8 w-px bg-border" />
           <div className="hidden sm:block">
@@ -240,13 +240,13 @@ export default function ApplicationTracker({ application }: ApplicationTrackerPr
         {application.status === 'APPROVED' ? (
           <button
             onClick={() => router.push(`/report/${application.application_id}`)}
-            className="flex items-center gap-1.5 rounded-lg bg-primary/10 px-4 py-1.5 text-[10px] font-extrabold text-primary hover:bg-primary/20 transition-all"
+            className="flex items-center gap-2 rounded-xl bg-amber-600 px-5 py-2.5 text-[10px] font-black uppercase tracking-widest text-white hover:bg-amber-700 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
           >
-            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
             </svg>
-            View Real-time Report
+            Review Report
           </button>
         ) : application.status.includes('REJECTED') ? (
             <div className="flex items-center gap-2 text-[10px] font-bold text-danger uppercase tracking-wider">
@@ -258,7 +258,7 @@ export default function ApplicationTracker({ application }: ApplicationTrackerPr
         ) : (
           <div className="flex items-center gap-2 text-[10px] font-bold text-muted uppercase tracking-wider">
             <div className="h-1 w-1 bg-muted rounded-full animate-ping"></div>
-            Verification in Progress
+            Processing Application
           </div>
         )}
       </div>

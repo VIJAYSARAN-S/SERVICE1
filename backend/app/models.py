@@ -14,6 +14,7 @@ class User(Base):
     failed_attempts = Column(Integer, default=0)
     lock_until = Column(DateTime(timezone=True), nullable=True)
     profile_photo = Column(String, nullable=True)
+    citizen_qr_code = Column(String, unique=True, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 class OTPCode(Base):
@@ -77,6 +78,41 @@ class IntegrityLedger(Base):
     record_hash = Column(String, nullable=False)
     block_ref = Column(String, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+class PDSTransaction(Base):
+    __tablename__ = "pds_transactions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    transaction_id = Column(String, unique=True, index=True, nullable=False)
+    citizen_code = Column(String, index=True, nullable=False)
+    beneficiary_name = Column(String, nullable=False)
+    ration_card_number = Column(String, nullable=False)
+    card_type = Column(String, nullable=False)
+    shop_id = Column(String, nullable=False)
+    issued_month = Column(String, nullable=False)
+    issued_date = Column(String, nullable=False)
+    verification_mode = Column(String, nullable=False) # QR_VERIFIED, MANUAL, OFFLINE
+    sync_status = Column(String, default="SYNCED") # SYNCED, PENDING_SYNC
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    synced_at = Column(DateTime(timezone=True), nullable=True)
+
+class PDSTransactionItem(Base):
+    __tablename__ = "pds_transaction_items"
+
+    id = Column(Integer, primary_key=True, index=True)
+    transaction_id = Column(String, ForeignKey("pds_transactions.transaction_id"))
+    item_name = Column(String, nullable=False)
+    quantity = Column(Float, nullable=False)
+    unit = Column(String, nullable=False)
+
+class PDSStock(Base):
+    __tablename__ = "pds_stock"
+
+    id = Column(Integer, primary_key=True, index=True)
+    shop_id = Column(String, index=True, nullable=False)
+    item_name = Column(String, nullable=False)
+    quantity = Column(Float, default=0.0)
+    unit = Column(String, nullable=False)
 
 class AuditLog(Base):
     __tablename__ = "audit_logs"

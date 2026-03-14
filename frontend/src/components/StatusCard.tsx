@@ -28,18 +28,18 @@ export default function StatusCard({ title, status, type, icon, onClick }: Statu
   return (
     <div 
       onClick={onClick}
-      className={`flex flex-col gap-4 rounded-xl border border-border bg-white p-5 shadow-soft transition-all ${
-        onClick ? 'cursor-pointer hover:shadow-md hover:border-primary/20 active:scale-[0.98]' : ''
+      className={`flex flex-col gap-5 rounded-2xl border border-border bg-white p-6 shadow-soft transition-all duration-300 ${
+        onClick ? 'cursor-pointer hover:shadow-xl hover:-translate-y-1 hover:border-amber/20' : ''
       }`}
     >
-      <div className={`flex h-12 w-12 items-center justify-center rounded-lg ${statusStyles[type]}`}>
+      <div className={`flex h-12 w-12 items-center justify-center rounded-xl shadow-sm ${statusStyles[type]}`}>
         {icon}
       </div>
       <div>
-        <h3 className="text-base font-bold text-navy">{title}</h3>
-        <div className="mt-1 flex items-center gap-1.5">
-          <div className={`h-1.5 w-1.5 rounded-full ${dotStyles[type]}`}></div>
-          <span className={`text-sm font-medium ${statusStyles[type].split(' ')[0]}`}>
+        <h3 className="text-sm font-black uppercase tracking-widest text-[#64748B]">{title}</h3>
+        <div className="mt-2 flex items-center gap-2">
+          <div className={`h-2 w-2 rounded-full ${dotStyles[type]} ${type === 'active' ? 'animate-pulse' : ''}`}></div>
+          <span className={`text-base font-black tracking-tight ${statusStyles[type].split(' ')[0]} uppercase`}>
             {status}
           </span>
         </div>

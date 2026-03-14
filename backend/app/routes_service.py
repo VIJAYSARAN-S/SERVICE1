@@ -10,7 +10,7 @@ from app.auth import get_current_user
 from app.blockchain import generate_record_hash, generate_block_ref
 from fastapi.responses import StreamingResponse
 from app.pdf_utils import generate_application_pdf
-from app.qr_utils import generate_qr_file
+from app.qr_utils import generate_qr_file, generate_simple_qr
 from app.audit import create_audit_log
 
 router = APIRouter(tags=["Citizen Services"])
@@ -119,31 +119,10 @@ def apply_birth_certificate(
 
 
 
-@router.post("/services/marriage-certificate")
-def apply_marriage_certificate(
-    payload: schemas.ApplicationRequest,
-    current_user=Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    return handle_application("marriage_certificate", "MC", payload, current_user, db)
 
 
-@router.post("/services/income-certificate")
-def apply_income_certificate(
-    payload: schemas.ApplicationRequest,
-    current_user=Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    return handle_application("income_certificate", "IC", payload, current_user, db)
 
-
-@router.post("/services/community-certificate")
-def apply_community_certificate(
-    payload: schemas.ApplicationRequest,
-    current_user=Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    return handle_application("community_certificate", "CC", payload, current_user, db)
+@router.post("/services/passport-application")
 
 
 
@@ -657,26 +636,41 @@ def download_application_pdf(
     )
 
 
+@router.get("/citizen/identity-qr")
+def get_citizen_identity_qr(
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    # Get the actual user object from DB to update it
+    user_obj = db.query(models.User).filter(models.User.id == current_user["user_id"]).first()
+    
+    if not user_obj:
+        raise HTTPException(status_code=404, detail="User not found.")
+
+    if not user_obj.citizen_qr_code:
+        # Generate a new unique code: CS-KIOSK-[RANDOM_HEX]
+        random_hex = uuid.uuid4().hex[:6].upper()
+        user_obj.citizen_qr_code = f"CS-KIOSK-{random_hex}"
+        db.commit()
+    
+    # Generate the QR image file if it doesn't exist
+    code = user_obj.citizen_qr_code
+    filename = code # QR file named after the code
+    generate_simple_qr(code, filename)
+
+    return {
+        "verification_code": code,
+        "qr_code_url": f"http://localhost:8000/qr_codes/{filename}.png",
+        "message": "Citizen identity QR retrieved successfully"
+    }
+
 @router.get("/citizen/qr")
 def get_citizen_qr(
     current_user=Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    # Find the latest application for this user
-    app = db.query(models.Application).filter(
-        models.Application.user_id == current_user["user_id"]
-    ).order_by(models.Application.id.desc()).first()
-
-    if not app:
-        raise HTTPException(status_code=404, detail="No applications found.")
-
-    ledger = db.query(models.IntegrityLedger).filter(
-        models.IntegrityLedger.application_id == app.application_id
-    ).first()
-
-    # Generate a stable verification code: QR-ID-HASH_PART
-    # Example: QR-BC-A1B2C3D4-X91K72 
-    hash_part = ledger.record_hash[:6].upper() if ledger else "000000"
+    # Legacy endpoint repurposed to return Identity QR
+    return get_citizen_identity_qr(current_user, db)
     verification_code = f"QR-{app.application_id}-{hash_part}"
 
     return {

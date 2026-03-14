@@ -167,3 +167,99 @@ def generate_application_pdf(app_data, is_final=False):
     doc.build(elements)
     buffer.seek(0)
     return buffer
+
+def generate_pds_bill_pdf(tx_data):
+    """
+    Generates a PDF bill for a PDS distribution transaction.
+    tx_data: dict containing transaction and items
+    """
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=72, leftMargin=72, topMargin=72, bottomMargin=72)
+    styles = getSampleStyleSheet()
+    
+    title_style = ParagraphStyle(
+        'TitleStyle',
+        parent=styles['Heading1'],
+        fontSize=20,
+        textColor=colors.HexColor("#0f172a"),
+        alignment=1,
+        spaceAfter=20
+    )
+    
+    header_style = ParagraphStyle(
+        'HeaderStyle',
+        parent=styles['Heading2'],
+        fontSize=12,
+        textColor=colors.HexColor("#f59e0b"), # Amber
+        spaceBefore=12,
+        spaceAfter=6
+    )
+    
+    label_style = ParagraphStyle(
+        'LabelStyle',
+        parent=styles['Normal'],
+        fontSize=9,
+        textColor=colors.gray,
+        bold=True
+    )
+    
+    value_style = ParagraphStyle(
+        'ValueStyle',
+        parent=styles['Normal'],
+        fontSize=10,
+        textColor=colors.black,
+        spaceAfter=8
+    )
+
+    elements = []
+
+    # Title & Header
+    elements.append(Paragraph("CyberShield Public Distribution System", title_style))
+    elements.append(Paragraph("OFFICIAL DISTRIBUTION RECEIPT", styles['Normal']))
+    elements.append(Spacer(1, 20))
+
+    # Transaction Info
+    elements.append(Paragraph("Transaction Details", header_style))
+    details = [
+        ["Transaction ID", tx_data.get('transaction_id', 'N/A')],
+        ["Citizen Code", tx_data.get('citizen_code', 'N/A')],
+        ["Beneficiary Name", tx_data.get('beneficiary_name', 'N/A')],
+        ["Ration Card No.", tx_data.get('ration_card_number', 'N/A')],
+        ["Shop ID", tx_data.get('shop_id', 'N/A')],
+        ["Date", tx_data.get('issued_date', 'N/A')],
+        ["Verification Mode", tx_data.get('verification_mode', 'N/A')]
+    ]
+    
+    for label, val in details:
+        elements.append(Paragraph(label.upper(), label_style))
+        elements.append(Paragraph(str(val), value_style))
+
+    elements.append(Spacer(1, 15))
+    
+    # Items Table
+    elements.append(Paragraph("Issued Items", header_style))
+    item_data = [["Item Name", "Quantity", "Unit"]]
+    for item in tx_data.get('items', []):
+        item_data.append([item.get('item_name'), str(item.get('quantity')), item.get('unit')])
+    
+    table = Table(item_data, colWidths=[2.5*inch, 1.5*inch, 1*inch])
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#0f172a")),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.whitesmoke),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey)
+    ]))
+    elements.append(table)
+
+    # Footer
+    elements.append(Spacer(1, 40))
+    elements.append(Paragraph("-" * 80, styles['Normal']))
+    footer_text = f"Digitally Verified Transaction • {tx_data.get('transaction_id')} • CyberShield Secured"
+    elements.append(Paragraph(footer_text, styles['Italic']))
+
+    doc.build(elements)
+    buffer.seek(0)
+    return buffer
