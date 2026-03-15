@@ -16,10 +16,11 @@ export default function PDSDistribute() {
   const [isScanning, setIsScanning] = useState(false);
   const [scannerError, setScannerError] = useState('');
   const [distributionList, setDistributionList] = useState<any[]>([
-    { item_name: 'Rice', quantity: 0, unit: 'kg', entitled: 15 },
-    { item_name: 'Wheat', quantity: 0, unit: 'kg', entitled: 10 },
-    { item_name: 'Sugar', quantity: 0, unit: 'kg', entitled: 2 },
-    { item_name: 'Kerosene', quantity: 0, unit: 'litre', entitled: 3 },
+    { item_name: 'Rice', quantity: 0, unit: 'KG', entitled: 15 },
+    { item_name: 'Wheat', quantity: 0, unit: 'KG', entitled: 10 },
+    { item_name: 'Sugar', quantity: 0, unit: 'KG', entitled: 2 },
+    { item_name: 'Palm Oil', quantity: 0, unit: 'Litre', entitled: 5 },
+    { item_name: 'Salt', quantity: 0, unit: 'KG', entitled: 1 },
   ]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [statusMsg, setStatusMsg] = useState({ type: '', text: '' });

@@ -11,6 +11,12 @@ export default function PDSDashboard() {
   const router = useRouter();
   const [stock, setStock] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<any[]>([]);
+  const [summary, setSummary] = useState<any>({
+    issued_today: 0,
+    queue_status: 'LOADING',
+    total_stock_items: 0,
+    low_stock_items: 0
+  });
   const [isOnline, setIsOnline] = useState(true);
   const [pendingSync, setPendingSync] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -34,6 +40,9 @@ export default function PDSDashboard() {
         
         const txData = await apiFetch(endpoints.pdsTransactions + '?shop_id=Shop-VLS-001');
         setTransactions(txData);
+
+        const summaryData = await apiFetch(endpoints.pdsSummary + '?shop_id=Shop-VLS-001');
+        setSummary(summaryData);
 
         // Check offline queue
         const queue = JSON.parse(localStorage.getItem('pds_offline_queue') || '[]');
@@ -164,11 +173,11 @@ export default function PDSDashboard() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
                     <p className="text-[10px] font-black text-amber uppercase tracking-widest">Issued Today</p>
-                    <p className="text-3xl font-black mt-1">24</p>
+                    <p className="text-3xl font-black mt-1">{summary.issued_today}</p>
                   </div>
                   <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
                     <p className="text-[10px] font-black text-amber uppercase tracking-widest">Queue Status</p>
-                    <p className="text-3xl font-black mt-1 text-success">CLEAR</p>
+                    <p className={`text-3xl font-black mt-1 ${summary.queue_status === 'CLEAR' ? 'text-success' : 'text-rose-500'}`}>{summary.queue_status}</p>
                   </div>
                 </div>
              </div>

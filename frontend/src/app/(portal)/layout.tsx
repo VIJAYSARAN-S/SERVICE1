@@ -1,9 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import "../globals.css";
 import Navbar from "@/components/Navbar";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "CyberShield | Secure E-Governance Platform",
@@ -26,8 +23,23 @@ export default function PortalLayout({
           <div className="grid grid-cols-1 gap-12 md:grid-cols-4">
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-navy text-white shadow-lg font-black text-xs uppercase tracking-tighter">CS</div>
+                <div className="flex h-12 w-12 items-center justify-center overflow-hidden">
+                  <img 
+                    src="/logo.png" 
+                    alt="Logo" 
+                    className="h-full w-full object-contain" 
+                    style={{ mixBlendMode: 'multiply' }}
+                  />
+                </div>
                 <span className="text-xl font-black text-navy uppercase tracking-tighter">CyberShield</span>
+                <div className="h-8 w-px bg-slate-200 mx-1"></div>
+                <div className="h-8 w-16 overflow-hidden flex items-center">
+                  <img
+                    src="/digital_india.png"
+                    alt="Digital India"
+                    className="h-full w-full object-contain"
+                  />
+                </div>
               </div>
               <p className="mt-6 max-w-xs text-sm font-medium text-slate-400 leading-relaxed">
                 Empowering citizens with next-generation secure, blockchain-verified digital governance services.

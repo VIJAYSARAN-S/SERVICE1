@@ -108,6 +108,30 @@ def get_transactions(shop_id: str = "Shop-VLS-001", db: Session = Depends(get_db
     txs = db.query(models.PDSTransaction).filter(models.PDSTransaction.shop_id == shop_id).order_by(models.PDSTransaction.created_at.desc()).all()
     return txs
 
+@router.get("/pds/summary", response_model=schemas.PDSSummaryResponse)
+def get_pds_summary(shop_id: str = "Shop-VLS-001", db: Session = Depends(get_db)):
+    # Get today's date in YYYY-MM-DD format
+    today = datetime.now().strftime("%Y-%m-%d")
+    
+    # Count transactions for today
+    issued_today = db.query(models.PDSTransaction).filter(
+        models.PDSTransaction.shop_id == shop_id,
+        models.PDSTransaction.issued_date == today
+    ).count()
+    
+    # Get stock metrics
+    stocks = db.query(models.PDSStock).filter(models.PDSStock.shop_id == shop_id).all()
+    low_stock_limit = 50.0 # Same as frontend logic
+    
+    low_stock_items = len([s for s in stocks if s.quantity < low_stock_limit])
+    
+    return {
+        "issued_today": issued_today,
+        "queue_status": "CLEAR" if issued_today < 50 else "BUSY", # Mock status
+        "total_stock_items": len(stocks),
+        "low_stock_items": low_stock_items
+    }
+
 @router.get("/pds/transactions/me", response_model=List[schemas.PDSTransactionResponse])
 def get_my_pds_transactions(current_user: dict = Depends(get_current_user), db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.id == current_user.get("user_id")).first()

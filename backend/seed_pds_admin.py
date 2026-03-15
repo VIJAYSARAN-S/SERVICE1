@@ -28,6 +28,32 @@ def create_pds_admin():
         db.commit()
         print(f"Assigned {citizen.citizen_qr_code} to citizen@example.com.")
     
+    # Seed initial stocks
+    stocks = [
+        {"item_name": "Rice", "quantity": 500.0, "unit": "KG"},
+        {"item_name": "Wheat", "quantity": 350.0, "unit": "KG"},
+        {"item_name": "Sugar", "quantity": 120.0, "unit": "KG"},
+        {"item_name": "Palm Oil", "quantity": 80.0, "unit": "Litre"},
+        {"item_name": "Salt", "quantity": 45.0, "unit": "KG"} # Should trigger low stock
+    ]
+    
+    for s_data in stocks:
+        existing_stock = db.query(models.PDSStock).filter(
+            models.PDSStock.shop_id == "Shop-VLS-001",
+            models.PDSStock.item_name == s_data["item_name"]
+        ).first()
+        
+        if not existing_stock:
+            new_stock = models.PDSStock(
+                shop_id="Shop-VLS-001",
+                item_name=s_data["item_name"],
+                quantity=s_data["quantity"],
+                unit=s_data["unit"]
+            )
+            db.add(new_stock)
+            print(f"Seeded stock for {s_data['item_name']}")
+    
+    db.commit()
     db.close()
 
 if __name__ == "__main__":

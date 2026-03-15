@@ -30,17 +30,27 @@ export default function InfrastructureMonitor() {
   const [lbStatus, setLbStatus] = useState('Healthy');
   const [lbMessage, setLbMessage] = useState('Routing requests across nodes');
   const [isSimulating, setIsSimulating] = useState(false);
+  const [chartHeights, setChartHeights] = useState<number[]>([]);
 
   useEffect(() => {
     if (!auth.isAuthenticated() || auth.getRole() !== 'manager') {
       // router.push('/login'); // Temporarily allow for dev
     }
 
+    // Initial random heights
+    setChartHeights([...Array(20)].map(() => 20 + Math.random() * 60));
+
     const interval = setInterval(() => {
         if (!isSimulating) {
             // Natural fluctuation
             setActiveUsers(prev => prev + (Math.random() > 0.5 ? 1 : -1));
             setRequestsPerMin(prev => prev + (Math.random() > 0.5 ? 5 : -5));
+            
+            // Fluctuating chart bars
+            setChartHeights(prev => prev.map(h => {
+              const delta = (Math.random() - 0.5) * 10;
+              return Math.max(10, Math.min(90, h + delta));
+            }));
         }
     }, 3000);
 
@@ -196,11 +206,11 @@ export default function InfrastructureMonitor() {
             </div>
             {/* Visual graph placeholder */}
             <div className="h-24 w-full bg-slate-100 rounded-2xl overflow-hidden flex items-end gap-1 px-4 pb-4">
-                {[...Array(20)].map((_, i) => (
+                {chartHeights.map((height, i) => (
                     <div 
                         key={i} 
                         className="flex-1 bg-amber/30 rounded-t-sm transition-all duration-500" 
-                        style={{ height: `${20 + Math.random() * 60}%` }}
+                        style={{ height: `${height}%` }}
                     ></div>
                 ))}
             </div>

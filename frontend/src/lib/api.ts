@@ -90,4 +90,5 @@ export const endpoints = {
   pdsTransactions: '/pds/transactions',
   pdsTransactionsMe: '/pds/transactions/me',
   pdsBillDownload: (id: string) => `/citizen/pds-bill/${id}`,
+  pdsSummary: '/pds/summary',
 };

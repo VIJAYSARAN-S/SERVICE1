@@ -261,3 +261,11 @@ class PDSTransactionResponse(BaseModel):
 
     class Config:
         from_attributes = True
+class PDSSummaryResponse(BaseModel):
+    issued_today: int
+    queue_status: str
+    total_stock_items: int
+    low_stock_items: int
+
+    class Config:
+        from_attributes = True
