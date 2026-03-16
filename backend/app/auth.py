@@ -11,7 +11,8 @@ if not SECRET_KEY:
     # Safe local-development fallback
     SECRET_KEY = "super-secret-demo-key-change-this"
     if os.getenv("ENVIRONMENT") == "production":
-        raise ValueError("SECRET_KEY must be set in production environment")
+        print("CRITICAL SECURITY ERROR: SECRET_KEY environment variable is not set in production.")
+        raise ValueError("SECRET_KEY must be set in production environment for security. Generate one with 'openssl rand -hex 32' and add it to Render Environment Variables.")
 
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
 try:

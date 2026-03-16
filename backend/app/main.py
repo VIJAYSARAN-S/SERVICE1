@@ -15,9 +15,11 @@ from app.routes_clerk import router as clerk_router
 from app.routes_manager import router as manager_router
 from app.routes_pds import router as pds_router
 
-Base.metadata.create_all(bind=engine)
+print(f"--- Starting E-Governance API ---")
+print(f"CWD: {os.getcwd()}")
+print(f"ENVIRONMENT: {os.getenv('ENVIRONMENT', 'development')}")
 
-app = FastAPI(title="Service 1 Secure E-Governance API") # Trigger reload
+app = FastAPI(title="Service 1 Secure E-Governance API")
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 origins = [origin.strip() for origin in FRONTEND_URL.split(",") if origin.strip()]
@@ -54,6 +56,17 @@ app.include_router(admin_router)
 app.include_router(clerk_router)
 app.include_router(manager_router)
 app.include_router(pds_router)
+
+@app.on_event("startup")
+def startup_db_check():
+    try:
+        print("Checking database connection...")
+        Base.metadata.create_all(bind=engine)
+        print("Database connection successful.")
+    except Exception as e:
+        print(f"CRITICAL: DATABASE CONNECTION ERROR: {e}")
+        # On Render, we want the error to be loud and clear
+        raise
 
 @app.get("/")
 def root():
