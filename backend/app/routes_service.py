@@ -673,14 +673,3 @@ def get_citizen_qr(
 ):
     # Legacy endpoint repurposed to return Identity QR
     return get_citizen_identity_qr(current_user, db)
-    verification_code = f"QR-{app.application_id}-{hash_part}"
-
-    backend_url = os.getenv("BACKEND_URL", "http://localhost:8000")
-    return {
-        "application_id": app.application_id,
-        "service_type": app.service_type,
-        "status": app.status,
-        "qr_code_url": f"{backend_url}/qr_codes/{app.application_id}.png",
-        "verification_code": verification_code,
-        "updated_at": app.updated_at.isoformat() if app.updated_at else app.created_at.isoformat()
-    }
