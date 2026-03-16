@@ -14,31 +14,42 @@ def scrub_password(url):
 
 if not DATABASE_URL:
     DATABASE_URL = f"sqlite:///{os.path.join(BASE_DIR, 'egov_v2.db')}"
-    print(f"DEBUG: Using fallback SQLite database: {scrub_password(DATABASE_URL)}")
+    # print(f"DEBUG: Using fallback SQLite database: {scrub_password(DATABASE_URL)}")
 else:
     # Clean possible accidental quotes or whitespace from Render env vars
-    DATABASE_URL = DATABASE_URL.strip().strip('"').strip("'")
-    print(f"DEBUG: Using environment DATABASE_URL: {scrub_password(DATABASE_URL)}")
+    # Use a loop to handle cases like '" url "' or "' url '"
+    prev_url = None
+    while DATABASE_URL != prev_url:
+        prev_url = DATABASE_URL
+        DATABASE_URL = DATABASE_URL.strip().strip('"').strip("'").strip()
+    
+    print(f"DEBUG: Processed DATABASE_URL: {scrub_password(DATABASE_URL)}")
 
 # Fix Heroku/Neon style 'postgres://' which SQLAlchemy doesn't like
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
-# Use connect_args only for SQLite, pool_pre_ping for Postgres
-if DATABASE_URL.startswith("sqlite"):
-    engine = create_engine(
-        DATABASE_URL,
-        connect_args={"check_same_thread": False}
-    )
-else:
-    # Use pool_pre_ping=True for cloud databases like Neon Postgres
-    # Add pool_size and max_overflow for better concurrent handling in production
-    engine = create_engine(
-        DATABASE_URL,
-        pool_pre_ping=True,
-        pool_size=10,
-        max_overflow=20
-    )
+try:
+    # Use connect_args only for SQLite, pool_pre_ping for Postgres
+    if DATABASE_URL.startswith("sqlite"):
+        engine = create_engine(
+            DATABASE_URL,
+            connect_args={"check_same_thread": False}
+        )
+    else:
+        # Use pool_pre_ping=True for cloud databases like Neon Postgres
+        # Add pool_size and max_overflow for better concurrent handling in production
+        engine = create_engine(
+            DATABASE_URL,
+            pool_pre_ping=True,
+            pool_size=10,
+            max_overflow=20
+        )
+except Exception as e:
+    print(f"CRITICAL ERROR: Failed to create SQLAlchemy engine.")
+    print(f"URL Attempted: {scrub_password(DATABASE_URL)}")
+    print(f"Error Details: {e}")
+    raise
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
