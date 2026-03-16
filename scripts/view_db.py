@@ -1,7 +1,7 @@
 import sqlite3
 import os
 
-db_path = r'd:\C1\backend\egov.db'
+db_path = "egov_v2.db"
 
 if not os.path.exists(db_path):
     print(f"Error: Database file not found at {db_path}")

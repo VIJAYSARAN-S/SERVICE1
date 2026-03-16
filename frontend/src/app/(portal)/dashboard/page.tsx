@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { auth } from '@/lib/auth';
-import { apiFetch, endpoints } from '@/lib/api';
+import { apiFetch, endpoints, getBaseUrl } from '@/lib/api';
 import StatusCard from '@/components/StatusCard';
 import ServiceCard from '@/components/ServiceCard';
 import ApplicationTracker from '@/components/ApplicationTracker';
@@ -67,7 +67,7 @@ export default function DashboardPage() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8000/upload-profile-photo', {
+      const response = await fetch(`${getBaseUrl()}/upload-profile-photo`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`

@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from datetime import datetime, timezone
 import uuid
 import json
+import os
 
 from app.database import get_db
 from app import models, schemas
@@ -658,9 +659,10 @@ def get_citizen_identity_qr(
     filename = code # QR file named after the code
     generate_simple_qr(code, filename)
 
+    backend_url = os.getenv("BACKEND_URL", "http://localhost:8000")
     return {
         "verification_code": code,
-        "qr_code_url": f"http://localhost:8000/qr_codes/{filename}.png",
+        "qr_code_url": f"{backend_url}/qr_codes/{filename}.png",
         "message": "Citizen identity QR retrieved successfully"
     }
 
@@ -673,11 +675,12 @@ def get_citizen_qr(
     return get_citizen_identity_qr(current_user, db)
     verification_code = f"QR-{app.application_id}-{hash_part}"
 
+    backend_url = os.getenv("BACKEND_URL", "http://localhost:8000")
     return {
         "application_id": app.application_id,
         "service_type": app.service_type,
         "status": app.status,
-        "qr_code_url": f"http://localhost:8000/qr_codes/{app.application_id}.png",
+        "qr_code_url": f"{backend_url}/qr_codes/{app.application_id}.png",
         "verification_code": verification_code,
         "updated_at": app.updated_at.isoformat() if app.updated_at else app.created_at.isoformat()
     }

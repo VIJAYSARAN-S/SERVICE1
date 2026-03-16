@@ -159,9 +159,12 @@ def generate_application_pdf(app_data, is_final=False):
         elements.append(Paragraph("Scan to verify authenticity online", styles['Italic']))
 
     # Footer
-    elements.append(Spacer(1, 50))
+    elements.append(Spacer(1, 40))
     elements.append(Paragraph("-" * 100, styles['Normal']))
-    footer_text = "This is a computer-generated document. For verification, visit http://localhost:3000/verify-record"
+    
+    # Use environment-driven URL for verification links in production
+    frontend_url = os.getenv("FRONTEND_URL", "http://localhost:3000").split(",")[0]
+    footer_text = f"This is a computer-generated document. For verification, visit {frontend_url}/verify-record"
     elements.append(Paragraph(footer_text, styles['Normal']))
 
     doc.build(elements)

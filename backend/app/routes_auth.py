@@ -298,14 +298,17 @@ def get_profile(db: Session = Depends(get_db), current_user: dict = Depends(get_
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
+    backend_url = os.getenv("BACKEND_URL", "http://localhost:8000")
     return {
         "full_name": user.full_name,
         "email": user.email,
-        "profile_photo": f"http://localhost:8000/{user.profile_photo}" if user.profile_photo else None,
+        "profile_photo": f"{backend_url}/{user.profile_photo}" if user.profile_photo else None,
         "role": user.role,
         "created_at": user.created_at
     }
 
+# WARNING: Local uploads are ephemeral on Render.
+# For production, migrate to AWS S3/GCS/Vercel Blob.
 @router.post("/upload-profile-photo")
 async def upload_profile_photo(
     file: UploadFile = File(...), 
@@ -328,5 +331,6 @@ async def upload_profile_photo(
     user.profile_photo = file_path
     db.commit()
 
-    return {"message": "Profile photo uploaded successfully", "photo_url": f"http://localhost:8000/{file_path}"}
+    backend_url = os.getenv("BACKEND_URL", "http://localhost:8000")
+    return {"message": "Profile photo uploaded successfully", "photo_url": f"{backend_url}/{file_path}"}
 

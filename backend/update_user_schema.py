@@ -1,7 +1,7 @@
 import sqlite3
 import os
 
-db_path = 'egov.db'
+db_path = 'egov_v2.db'
 
 if os.path.exists(db_path):
     conn = sqlite3.connect(db_path)

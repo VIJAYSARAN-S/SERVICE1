@@ -2,7 +2,7 @@ import sqlite3
 import bcrypt
 
 def create_user(email, password, full_name, role):
-    conn = sqlite3.connect('egov.db')
+    conn = sqlite3.connect('egov_v2.db')
     cursor = conn.cursor()
     
     # Simple bcrypt hash

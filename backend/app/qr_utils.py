@@ -1,6 +1,9 @@
+import qrcode
 import os
 import json
-import qrcode
+
+# WARNING: Local file storage is ephemeral on Render.
+# For production, use cloud storage (S3/GCS/Vercel Blob).
 
 def generate_qr_file(application_id: str, service_type: str, record_hash: str, timestamp: str):
     qr_folder = "qr_codes"

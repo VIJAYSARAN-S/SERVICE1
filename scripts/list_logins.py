@@ -1,6 +1,6 @@
 import sqlite3
 
-db_path = r'd:\C1\backend\egov.db'
+db_path = "egov_v2.db"
 conn = sqlite3.connect(db_path)
 cursor = conn.cursor()
 

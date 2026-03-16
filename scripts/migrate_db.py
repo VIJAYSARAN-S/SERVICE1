@@ -2,7 +2,7 @@ import sqlite3
 import os
 
 def migrate():
-    db_path = "egov.db"
+    db_path = "egov_v2.db"
     if not os.path.exists(db_path):
         print("Database not found. Skipping manual migration (create_all will handle it).")
         return

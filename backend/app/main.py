@@ -1,8 +1,9 @@
+import os
+import traceback
 from fastapi import FastAPI, Request, Depends, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
-import traceback
 from sqlalchemy.orm import Session
 from app.database import Base, engine, get_db
 from app import models, pdf_utils
@@ -18,13 +19,21 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Service 1 Secure E-Governance API") # Trigger reload
 
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
+origins = [origin.strip() for origin in FRONTEND_URL.split(",") if origin.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Ensure local directories exist for mounts
+for folder in ["qr_codes", "uploads"]:
+    if not os.path.exists(folder):
+        os.makedirs(folder)
 
 # Serve files statically
 app.mount("/qr_codes", StaticFiles(directory="qr_codes"), name="qr_codes")

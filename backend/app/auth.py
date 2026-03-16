@@ -4,9 +4,20 @@ from passlib.context import CryptContext
 from fastapi import Header, HTTPException
 import random
 
-SECRET_KEY = "super-secret-demo-key-change-this"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 720 # Extended for demo session
+import os
+
+SECRET_KEY = os.getenv("SECRET_KEY")
+if not SECRET_KEY:
+    # Safe local-development fallback
+    SECRET_KEY = "super-secret-demo-key-change-this"
+    if os.getenv("ENVIRONMENT") == "production":
+        raise ValueError("SECRET_KEY must be set in production environment")
+
+ALGORITHM = os.getenv("ALGORITHM", "HS256")
+try:
+    ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "720"))
+except (ValueError, TypeError):
+    ACCESS_TOKEN_EXPIRE_MINUTES = 720
 
 import bcrypt
 
