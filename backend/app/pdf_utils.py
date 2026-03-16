@@ -56,7 +56,7 @@ def generate_application_pdf(app_data, is_final=False):
     # Title
     main_title = "OFFICIAL GOVERNMENT CERTIFICATE" if is_final else "APPLICATION SUBMISSION RECEIPT"
     elements.append(Paragraph(main_title, title_style))
-    elements.append(Paragraph("CyberShield Secure e-Governance Portal", styles['Normal']))
+    elements.append(Paragraph("Service 1 Secure e-Governance Portal", styles['Normal']))
     elements.append(Spacer(1, 20))
 
     # Verification Info
@@ -133,7 +133,7 @@ def generate_application_pdf(app_data, is_final=False):
     if is_final:
         elements.append(Spacer(1, 20))
         elements.append(Paragraph("Blockchain Integrity Verification", header_style))
-        elements.append(Paragraph("This document is cryptographically signed and stored on the CyberShield Identity Ledger.", styles['Italic']))
+        elements.append(Paragraph("This document is cryptographically signed and stored on the Service 1 Identity Ledger.", styles['Italic']))
         
         blockchain_data = [
             ["Record Hash:", app_data.get('blockchain', {}).get('record_hash', 'N/A')],
@@ -214,7 +214,7 @@ def generate_pds_bill_pdf(tx_data):
     elements = []
 
     # Title & Header
-    elements.append(Paragraph("CyberShield Public Distribution System", title_style))
+    elements.append(Paragraph("Service 1 Public Distribution System", title_style))
     elements.append(Paragraph("OFFICIAL DISTRIBUTION RECEIPT", styles['Normal']))
     elements.append(Spacer(1, 20))
 
@@ -257,7 +257,7 @@ def generate_pds_bill_pdf(tx_data):
     # Footer
     elements.append(Spacer(1, 40))
     elements.append(Paragraph("-" * 80, styles['Normal']))
-    footer_text = f"Digitally Verified Transaction • {tx_data.get('transaction_id')} • CyberShield Secured"
+    footer_text = f"Digitally Verified Transaction • {tx_data.get('transaction_id')} • Service 1 Secured"
     elements.append(Paragraph(footer_text, styles['Italic']))
 
     doc.build(elements)

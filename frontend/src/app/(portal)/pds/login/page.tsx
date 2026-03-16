@@ -61,33 +61,27 @@ export default function PDSLoginPage() {
   return (
     <div className="flex min-h-[calc(100vh-64px)] items-center justify-center p-4 bg-slate-50">
       <div className="w-full max-w-md overflow-hidden rounded-[32px] border border-border bg-white shadow-[0_40px_80px_-20px_rgba(15,23,42,0.15)]">
-        <div className="bg-navy p-12 text-center relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-6 opacity-10">
-             <svg className="h-28 w-28 text-white" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-             </svg>
-          </div>
-          
-          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-amber text-navy shadow-2xl relative z-10 ring-8 ring-amber/10">
-            <svg className="h-10 w-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="bg-slate-50/50 p-10 text-center pb-8 border-b border-slate-100 relative">
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-navy text-white shadow-xl">
+            <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
             </svg>
           </div>
-          <h1 className="text-3xl font-black text-white tracking-tighter relative z-10 uppercase">PDS Login</h1>
-          <p className="mt-2 text-[10px] font-black text-amber uppercase tracking-[0.3em] relative z-10">Ration Shop Authentication</p>
+          <h1 className="text-3xl font-black text-navy tracking-tight uppercase">PDS Login</h1>
+          <p className="mt-2 text-xs font-black uppercase tracking-widest text-saffron bg-navy/5 inline-block px-3 py-1 rounded-lg">Ration Shop Authentication</p>
         </div>
 
         {/* OTP Toast (Reused from standard login for consistency) */}
         {showOtpToast && (
           <div className="fixed top-6 right-6 z-[100] animate-in fade-in slide-in-from-top-4 duration-300">
-            <div className="flex items-center gap-4 rounded-2xl border-2 border-amber bg-white p-6 shadow-2xl ring-4 ring-amber/10">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber text-navy">
+            <div className="flex items-center gap-4 rounded-3xl border-2 border-saffron bg-white p-6 shadow-[0_30px_60px_-15px_rgba(255,153,51,0.2)] ring-8 ring-saffron/10">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-navy text-white shadow-lg">
                 <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                 </svg>
               </div>
               <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-amber-600">Verification Code Sent</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-saffron">Verification Code Sent</p>
                 <h4 className="text-2xl font-black text-navy tracking-widest mt-0.5">{demoOtp}</h4>
               </div>
             </div>
@@ -143,10 +137,10 @@ export default function PDSLoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="mt-4 flex w-full items-center justify-center gap-3 rounded-2xl bg-amber py-5 text-[10px] font-black uppercase tracking-[0.2em] text-navy shadow-[0_20px_40px_-10px_rgba(217,119,6,0.3)] transition-all hover:bg-amber-light hover:shadow-[0_30px_60px_-10px_rgba(217,119,6,0.4)] hover:-translate-y-1 active:translate-y-0 disabled:opacity-70"
+              className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-saffron py-4 text-xs font-black uppercase tracking-widest text-white shadow-xl transition-all hover:bg-[#F28B20] hover:shadow-2xl hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {isLoading ? (
-                <div className="h-5 w-5 animate-spin rounded-full border-2 border-navy/30 border-t-navy"></div>
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white"></div>
               ) : (
                 <>
                   Login

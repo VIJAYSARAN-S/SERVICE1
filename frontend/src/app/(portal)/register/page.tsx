@@ -79,7 +79,7 @@ export default function RegisterPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
             </svg>
           </div>
-          <p className="relative z-10 text-[10px] font-black uppercase tracking-[0.3em] text-amber-500 mb-2">Join CyberShield Secure e-Governance</p>
+          <p className="relative z-10 text-[10px] font-black uppercase tracking-[0.3em] text-amber-500 mb-2">Join Service 1 Secure e-Governance</p>
           <h1 className="relative z-10 text-3xl font-black tracking-tighter text-white uppercase">Create Account</h1>
         </div>
 

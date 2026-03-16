@@ -16,7 +16,7 @@ from app.routes_pds import router as pds_router
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="CyberShield Secure E-Governance API") # Trigger reload
+app = FastAPI(title="Service 1 Secure E-Governance API") # Trigger reload
 
 app.add_middleware(
     CORSMiddleware,

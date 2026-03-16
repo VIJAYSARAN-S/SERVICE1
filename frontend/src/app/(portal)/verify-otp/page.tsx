@@ -94,6 +94,7 @@ export default function VerifyOtpPage() {
       
       setResendOtpCode(data.demo_otp);
       setResendSuccess(true);
+      window.alert(`Security Notice: Your Verification Code is ${data.demo_otp}`);
       // Clear success message after 5 seconds
       setTimeout(() => setResendSuccess(false), 5000);
     } catch (err: any) {
@@ -226,7 +227,7 @@ export default function VerifyOtpPage() {
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-full border border-slate-100">
                <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
                <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">
-                 SECURE VERIFICATION BY CYBERSHIELD
+                 SECURE VERIFICATION BY SERVICE 1
                </p>
             </div>
           </div>

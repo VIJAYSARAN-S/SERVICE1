@@ -2,16 +2,18 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { auth } from '@/lib/auth';
 
 export default function Navbar() {
+  const pathname = usePathname();
   const [isAuthenticated, setIsAuthenticated] = React.useState(false);
   const [role, setRole] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     setIsAuthenticated(auth.isAuthenticated());
     setRole(auth.getRole());
-  }, []);
+  }, [pathname]);
 
   const handleLogout = () => {
     auth.logout();
@@ -30,7 +32,7 @@ export default function Navbar() {
             />
           </div>
           <Link href="/" className="text-xl font-black tracking-tighter text-navy uppercase">
-            CyberShield
+            Service 1
           </Link>
           <div className="h-8 w-px bg-slate-200 mx-2 hidden sm:block"></div>
           <div className="h-8 w-16 overflow-hidden hidden sm:flex items-center">

@@ -123,7 +123,7 @@ export default function SuccessPage() {
       </div>
 
       <p className="mx-auto max-w-sm text-xs leading-relaxed text-muted/60">
-        This is an automated system generated receipt. For any discrepancies, please contact the CyberShield support helpdesk with your Application ID.
+        This is an automated system generated receipt. For any discrepancies, please contact the Service 1 support helpdesk with your Application ID.
       </p>
     </div>
   );

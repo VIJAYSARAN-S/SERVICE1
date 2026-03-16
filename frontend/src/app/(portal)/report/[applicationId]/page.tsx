@@ -155,7 +155,7 @@ export default function ReportPage() {
       const xOffset = (pdfWidth - finalWidth) / 2;
       
       pdf.addImage(dataUrl, 'JPEG', xOffset, margin, finalWidth, finalHeight);
-      pdf.save(`CyberShield_Report_${applicationId}.pdf`);
+      pdf.save(`Service_1_Report_${applicationId}.pdf`);
     } catch (err: any) {
       console.error('PDF Generation Error:', err);
       alert('PDF generation failed. Using browser print as fallback.');
@@ -214,8 +214,8 @@ export default function ReportPage() {
             </svg>
           </div>
           
-          <p className="text-[10px] font-black uppercase tracking-[0.4em] text-amber-600 mb-2">CyberShield Official Report</p>
-          <h1 className="text-5xl font-black tracking-tighter text-navy uppercase leading-none mb-1">CyberShield</h1>
+          <p className="text-[10px] font-black uppercase tracking-[0.4em] text-amber-600 mb-2">Service 1 Official Report</p>
+          <h1 className="text-5xl font-black tracking-tighter text-navy uppercase leading-none mb-1">Service 1</h1>
           <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Government Service Application Receipt</p>
           
           <div className="mt-8">
@@ -391,7 +391,7 @@ export default function ReportPage() {
             <div className="mt-8 p-6 rounded-3xl bg-white border border-emerald-100/50 shadow-sm max-w-lg">
               <p className="text-sm font-medium text-slate-500 leading-relaxed italic">
                 Application processed on <strong className="text-navy">{fmtDate(report.updated_at)}</strong>. 
-                Processed by CyberShield Portal.
+                Processed by Service 1 Portal.
               </p>
             </div>
           )}
@@ -435,7 +435,7 @@ export default function ReportPage() {
       {/* ── Footer ──────────────────────────────────────────────────────────── */}
       <div className="text-center pt-8">
         <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-300">
-          CyberShield Official Document · Secure Verification
+          Service 1 Official Document · Secure Verification
         </p>
         <div className="mt-4 flex items-center justify-center gap-4">
            <div className="h-px w-12 bg-slate-100"></div>

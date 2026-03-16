@@ -32,7 +32,7 @@ const CAROUSEL_CARDS = [
   {
     id: 'D',
     title: 'AI Threat Detection',
-    description: 'CyberShield constantly monitors patterns across the grid. Our AI engine identifies suspicious login behaviors and unusual transaction volumes in milliseconds, locking down sensitive data before a breach can even occur.',
+    description: 'Service 1 constantly monitors patterns across the grid. Our AI engine identifies suspicious login behaviors and unusual transaction volumes in milliseconds, locking down sensitive data before a breach can even occur.',
     icon: <Zap className="w-8 h-8" />,
     color: 'navy'
   },
@@ -48,7 +48,7 @@ const CAROUSEL_CARDS = [
 const OFFICIAL_ROLES = [
   {
     title: 'Administrative Clerk',
-    role: 'Case Officer',
+    role: 'Case',
     description: 'Manage application queues, verify citizen documents, and update service statuses.',
     icon: <Users className="w-6 h-6" />,
     link: '/clerk/login',
@@ -112,7 +112,7 @@ export default function LandingPage() {
                 />
               </div>
               <div>
-                <h1 className="text-sm font-black uppercase tracking-tighter leading-none text-[#0F172A]">CyberShield</h1>
+                <h1 className="text-sm font-black uppercase tracking-tighter leading-none text-[#0F172A]">Service 1</h1>
                 <p className="text-[10px] font-bold uppercase tracking-widest text-saffron mt-0.5">Secure Governance Platform</p>
               </div>
               <div className="h-10 w-px bg-slate-200 mx-2 hidden sm:block"></div>
@@ -403,7 +403,7 @@ export default function LandingPage() {
                 />
               </div>
               <div>
-                <p className="text-sm font-black uppercase tracking-tighter text-navy">CyberShield</p>
+                <p className="text-sm font-black uppercase tracking-tighter text-navy">Service 1</p>
                 <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest -mt-0.5">Secure Governance platform</p>
               </div>
               <div className="h-8 w-px bg-slate-200 mx-2 hidden md:block"></div>
@@ -416,7 +416,7 @@ export default function LandingPage() {
               </div>
             </div>
             <p className="text-[10px] font-black text-navy uppercase tracking-[0.2em] opacity-60">
-              © 2026 CYBERSHIELD NETWORK. ALL RIGHTS RESERVED.
+              © 2026 SERVICE 1 NETWORK. ALL RIGHTS RESERVED.
             </p>
           </div>
         </footer>

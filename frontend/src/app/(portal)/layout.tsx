@@ -3,7 +3,7 @@ import { Inter } from "next/font/google";
 import Navbar from "@/components/Navbar";
 
 export const metadata: Metadata = {
-  title: "CyberShield | Secure E-Governance Platform",
+  title: "Service 1 | Secure E-Governance Platform",
   description: "Next-generation secure digital service platform for citizens.",
 };
 
@@ -31,7 +31,7 @@ export default function PortalLayout({
                     style={{ mixBlendMode: 'multiply' }}
                   />
                 </div>
-                <span className="text-xl font-black text-navy uppercase tracking-tighter">CyberShield</span>
+                <span className="text-xl font-black text-navy uppercase tracking-tighter">Service 1</span>
                 <div className="h-8 w-px bg-slate-200 mx-1"></div>
                 <div className="h-8 w-16 overflow-hidden flex items-center">
                   <img
@@ -64,7 +64,7 @@ export default function PortalLayout({
           </div>
           <div className="mt-16 flex flex-col items-center justify-between border-t border-slate-50 pt-10 md:flex-row">
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-              © 2026 CYBERSHIELD NETWORK. SECURE DIGITAL GOVERNANCE.
+              © 2026 SERVICE 1 NETWORK. SECURE DIGITAL GOVERNANCE.
             </p>
             <div className="mt-6 flex items-center gap-4 md:mt-0">
                <div className="flex items-center gap-2 text-[10px] font-black text-amber-600 uppercase tracking-[0.2em]">

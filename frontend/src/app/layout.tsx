@@ -6,7 +6,7 @@ import Navbar from "@/components/Navbar";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "CyberShield | Secure E-Governance Platform",
+  title: "Service 1 | Secure E-Governance Platform",
   description: "Next-generation secure digital service platform for citizens.",
 };
 

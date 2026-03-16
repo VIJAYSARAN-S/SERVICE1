@@ -33,6 +33,7 @@ export default function ForgotPasswordPage() {
       if (data.demo_otp) {
         setDemoOtp(data.demo_otp);
         setShowOtpToast(true);
+        window.alert(`Security Notice: Your Verification Code is ${data.demo_otp}`);
         setTimeout(() => setShowOtpToast(false), 10000);
       }
       setStep(2);

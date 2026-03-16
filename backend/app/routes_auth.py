@@ -68,7 +68,12 @@ def login_user(payload: schemas.LoginRequest, db: Session = Depends(get_db)):
             lock_until = lock_until.replace(tzinfo=timezone.utc)
         
         if lock_until > datetime.now(timezone.utc):
-            raise HTTPException(status_code=403, detail="Account temporarily locked due to multiple failed login attempts.")
+            raise HTTPException(status_code=403, detail="Security protocol triggered: This account is temporarily blocked for 10 minutes due to multiple failed login attempts. Please try again later.")
+        else:
+            # If the lock period has expired, reset the counter
+            user.failed_attempts = 0
+            user.lock_until = None
+            db.commit()
 
     # Feature 1 & 4 & 6 - Risk Check (using device_id)
     device_match = user.device_id == payload.device_id if user.device_id else True
@@ -98,14 +103,15 @@ def login_user(payload: schemas.LoginRequest, db: Session = Depends(get_db)):
     if not verify_password(payload.password, user.password_hash):
         # Feature 2 - Increment Failed Attempts
         user.failed_attempts += 1
-        if user.failed_attempts >= 3:
+        if user.failed_attempts >= 5:
             user.lock_until = datetime.now(timezone.utc) + timedelta(minutes=10)
             create_audit_log(db, "MULTIPLE_FAILED_ATTEMPTS", f"Account locked for {payload.email}")
             db.commit()
-            raise HTTPException(status_code=403, detail="Too many failed login attempts. Account temporarily locked for 10 minutes.")
+            raise HTTPException(status_code=403, detail="Too many failed login attempts. Access blocked for 10 minutes.")
         
         db.commit()
-        raise HTTPException(status_code=401, detail="Invalid password")
+        remaining = 5 - user.failed_attempts
+        raise HTTPException(status_code=401, detail=f"Invalid password. {remaining} attempts remaining before account block.")
 
     # Reset failed attempts on success
     user.failed_attempts = 0

@@ -20,7 +20,7 @@ def build_final_report(app: models.Application, ledger: models.IntegrityLedger |
     ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
     report_lines = [
         "============================================",
-        "   CYBERSHIELD e-GOVERNANCE FINAL REPORT   ",
+        "   SERVICE 1 e-GOVERNANCE FINAL REPORT   ",
         "============================================",
         f"Application ID     : {app.application_id}",
         f"Service Type       : {app.service_type.replace('_', ' ').title()}",

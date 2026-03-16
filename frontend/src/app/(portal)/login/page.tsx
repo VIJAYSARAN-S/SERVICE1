@@ -54,6 +54,7 @@ export default function LoginPage() {
           if (data.demo_otp) {
             setDemoOtp(data.demo_otp);
             setShowOtpToast(true);
+            window.alert(`Security Notice: Your Verification Code is ${data.demo_otp}`);
           }
           auth.setEmail(email);
           // Give more time for user to see the OTP
@@ -66,6 +67,7 @@ export default function LoginPage() {
         if (data.demo_otp) {
           setDemoOtp(data.demo_otp);
           setShowOtpToast(true);
+          window.alert(`Security Notice: Your Verification Code is ${data.demo_otp}`);
         }
         auth.setEmail(email);
         setTimeout(() => router.push('/verify-otp'), 4000);

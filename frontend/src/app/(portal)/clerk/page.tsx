@@ -10,8 +10,12 @@ import SummaryCard from '@/components/SummaryCard';
 export default function ClerkDashboard() {
   const router = useRouter();
   const [applications, setApplications] = useState<any[]>([]);
+  const [profile, setProfile] = useState<any>(null);
+  const [user, setUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
   const [actionState, setActionState] = useState<Record<string, { remark: string; loading: boolean }>>({});
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const role = auth.getRole();
@@ -19,8 +23,42 @@ export default function ClerkDashboard() {
       router.push('/login');
       return;
     }
+    setUser(auth.getUser());
     loadApplications();
+
+    apiFetch(endpoints.profile)
+      .then(setProfile)
+      .catch(err => console.error('Profile fetch failed:', err));
   }, [router]);
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:8000/upload-profile-photo', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      if (!response.ok) throw new Error('Upload failed');
+
+      const data = await response.json();
+      setProfile({ ...profile, profile_photo: data.photo_url });
+    } catch (err: any) {
+      alert(err.message || 'Error uploading photo');
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const loadApplications = () => {
     setIsLoading(true);
@@ -180,12 +218,55 @@ export default function ClerkDashboard() {
   );
 
   return (
-    <div className="space-y-8 pb-20">
-      <div className="flex flex-col gap-2">
-        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-600">Clerk Panel</p>
-        <h1 className="text-4xl font-black tracking-tighter text-navy uppercase leading-none">Clerk Dashboard</h1>
-        <p className="text-sm font-medium text-slate-400">Review and verify pending applications.</p>
-      </div>
+    <div className="space-y-12 pb-20">
+      {/* Profile Header Section */}
+      <section className="flex items-center gap-8 rounded-[32px] bg-[#BFC6C4] p-10 shadow-[0_40px_80px_-20px_rgba(15,23,42,0.08)] border border-slate-300">
+        <div
+          className="relative h-28 w-28 cursor-pointer group"
+          onClick={() => fileInputRef.current?.click()}
+        >
+          <div className="h-full w-full overflow-hidden rounded-full border-4 border-slate-100 p-1.5 transition-all duration-500 group-hover:border-saffron bg-white shadow-inner relative">
+            <div className="absolute -inset-1 rounded-full border-2 border-indian-green/20"></div>
+            {profile?.profile_photo ? (
+              <img
+                src={profile.profile_photo}
+                alt="Profile"
+                className="h-full w-full rounded-full object-cover shadow-sm"
+              />
+            ) : (
+              <div className="h-full w-full rounded-full bg-slate-50 flex items-center justify-center text-slate-300">
+                <svg className="h-14 w-14" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                </svg>
+              </div>
+            )}
+          </div>
+          <div className="absolute inset-2 flex items-center justify-center rounded-full bg-navy/60 opacity-0 transition-opacity duration-300 group-hover:opacity-100 backdrop-blur-[2px]">
+            <svg className="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+            </svg>
+          </div>
+          {isUploading && (
+            <div className="absolute inset-0 flex items-center justify-center rounded-full bg-white/80">
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-saffron border-t-transparent"></div>
+            </div>
+          )}
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handlePhotoUpload}
+            className="hidden"
+            accept="image/*"
+          />
+        </div>
+        <div className="space-y-1">
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#CF6A02]">Clerk Profile</p>
+          <h1 className="text-4xl font-black tracking-tighter text-navy uppercase leading-none">
+            Welcome, {(profile?.full_name || user?.full_name || 'Clerk').replace(' Officer', '')}
+          </h1>
+          <p className="text-sm font-medium text-slate-600">Administrative Case Dashboard</p>
+        </div>
+      </section>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
         <SummaryCard

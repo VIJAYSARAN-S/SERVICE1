@@ -10,9 +10,13 @@ import SummaryCard from '@/components/SummaryCard';
 export default function ManagerDashboard() {
   const router = useRouter();
   const [applications, setApplications] = useState<any[]>([]);
+  const [profile, setProfile] = useState<any>(null);
+  const [user, setUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
   const [actionState, setActionState] = useState<Record<string, { remark: string; loading: boolean }>>({});
   const [selectedReport, setSelectedReport] = useState<string | null>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const role = auth.getRole();
@@ -20,8 +24,42 @@ export default function ManagerDashboard() {
       router.push('/login');
       return;
     }
+    setUser(auth.getUser());
     loadApplications();
+
+    apiFetch(endpoints.profile)
+      .then(setProfile)
+      .catch(err => console.error('Profile fetch failed:', err));
   }, [router]);
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:8000/upload-profile-photo', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      if (!response.ok) throw new Error('Upload failed');
+
+      const data = await response.json();
+      setProfile({ ...profile, profile_photo: data.photo_url });
+    } catch (err: any) {
+      alert(err.message || 'Error uploading photo');
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const loadApplications = () => {
     setIsLoading(true);
@@ -187,22 +225,63 @@ export default function ManagerDashboard() {
 
   return (
     <div className="space-y-12 pb-20">
-      <div className="flex items-center justify-between gap-8 flex-wrap lg:flex-nowrap">
-        <div className="space-y-1">
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-600">Manager Panel</p>
-          <h1 className="text-4xl font-black tracking-tighter text-navy uppercase leading-none">Manager Dashboard</h1>
-          <p className="text-sm font-medium text-slate-400">Final approval and oversight of applications.</p>
+      {/* Profile Header Section */}
+      <section className="flex flex-col md:flex-row items-center gap-8 rounded-[32px] bg-[#BFC6C4] p-10 shadow-[0_40px_80px_-20px_rgba(15,23,42,0.08)] border border-slate-300">
+        <div
+          className="relative h-28 w-28 cursor-pointer group shrink-0"
+          onClick={() => fileInputRef.current?.click()}
+        >
+          <div className="h-full w-full overflow-hidden rounded-full border-4 border-slate-100 p-1.5 transition-all duration-500 group-hover:border-saffron bg-white shadow-inner relative">
+            <div className="absolute -inset-1 rounded-full border-2 border-indian-green/20"></div>
+            {profile?.profile_photo ? (
+              <img
+                src={profile.profile_photo}
+                alt="Profile"
+                className="h-full w-full rounded-full object-cover shadow-sm"
+              />
+            ) : (
+              <div className="h-full w-full rounded-full bg-slate-50 flex items-center justify-center text-slate-300">
+                <svg className="h-14 w-14" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                </svg>
+              </div>
+            )}
+          </div>
+          <div className="absolute inset-2 flex items-center justify-center rounded-full bg-navy/60 opacity-0 transition-opacity duration-300 group-hover:opacity-100 backdrop-blur-[2px]">
+            <svg className="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+            </svg>
+          </div>
+          {isUploading && (
+            <div className="absolute inset-0 flex items-center justify-center rounded-full bg-white/80">
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-saffron border-t-transparent"></div>
+            </div>
+          )}
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handlePhotoUpload}
+            className="hidden"
+            accept="image/*"
+          />
+        </div>
+        <div className="flex-1 space-y-1">
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#CF6A02]">Executive Profile</p>
+          <h1 className="text-4xl font-black tracking-tighter text-navy uppercase leading-none">
+            Welcome, {(profile?.full_name || user?.full_name || 'Manager').replace('Senior ', '')}
+          </h1>
+          <p className="text-sm font-medium text-slate-600">Regional Director & Oversight Panel</p>
         </div>
         <button
           onClick={() => router.push('/manager/infrastructure')}
-          className="group flex items-center gap-3 rounded-2xl bg-navy px-8 py-4 text-xs font-black uppercase tracking-[0.2em] text-white shadow-[0_20px_40px_-10px_rgba(15,23,42,0.3)] hover:shadow-[0_30px_60px_-10px_rgba(15,23,42,0.4)] transition-all hover:-translate-y-1"
+          className="group flex items-center gap-3 rounded-2xl bg-navy px-8 py-4 text-xs font-black uppercase tracking-[0.2em] text-white shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1"
         >
           <svg className="h-5 w-5 text-amber group-hover:rotate-180 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
           </svg>
           Monitor Infrastructure
         </button>
-      </div>
+      </section>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
         <SummaryCard
