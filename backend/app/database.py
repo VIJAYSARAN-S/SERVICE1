@@ -25,6 +25,18 @@ else:
     
     print(f"DEBUG: Processed DATABASE_URL: {scrub_password(DATABASE_URL)}")
 
+# Check for placeholder strings that haven't been replaced
+PLACEHOLDERS = ["your-neon-url", "hostname/dbname", "your-app.vercel.app"]
+if any(p in DATABASE_URL.lower() for p in PLACEHOLDERS):
+    print("\n" + "!" * 60)
+    print("CRITICAL CONFIGURATION ERROR: placeholder detected in DATABASE_URL!")
+    print(f"Value found: {scrub_password(DATABASE_URL)}")
+    print("Please update your environment variables in the Render Dashboard.")
+    print("1. Go to your Web Service -> Environment")
+    print("2. Set DATABASE_URL to your ACTUAL Neon Postgres connection string.")
+    print("!" * 60 + "\n")
+    raise ValueError("Invalid DATABASE_URL: Placeholder detected. Please configure your production database.")
+
 # Fix Heroku/Neon style 'postgres://' which SQLAlchemy doesn't like
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
